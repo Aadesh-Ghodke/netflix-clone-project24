@@ -1,0 +1,5015 @@
+(function () {
+  "use strict";
+  var simsController = angular.module("sims.module.Fee");
+
+  simsController.run(function ($rootScope, $templateCache) {
+    $rootScope.$on("$viewContentLoaded", function () {
+      $templateCache.removeAll();
+    });
+  });
+
+  simsController.controller("AdmissionDashboardModernCont", [
+    "$scope",
+    "$state",
+    "$stateParams",
+    "$rootScope",
+    "$timeout",
+    "gettextCatalog",
+    "$http",
+    "$filter",
+    "ENV",
+    "AuthenticationService",
+    "commonFunctionsService",
+    function (
+      $scope,
+      $state,
+      $stateParams,
+      $rootScope,
+      $timeout,
+      gettextCatalog,
+      $http,
+      $filter,
+      ENV,
+      AuthenticationService,
+      commonFunctionsService
+    ) {
+      $scope.pagesize = "10";
+      $scope.pageindex = "1";
+      $scope.pager = true;
+      ($scope.filteredTodos = []),
+        ($scope.currentPage = 1),
+        ($scope.numPerPage = 25),
+        ($scope.maxSize = 25);
+
+      $scope.edt = {};
+      $scope.eventsList = [];
+      $scope.event_object = [];
+      $scope.about_lst = [];
+      $scope.school_lst = [];
+      $scope.adm_cmb_lst = [];
+      $scope.dash = {};
+      $scope.ddMMyyyy = $filter("date")(new Date(), "dd-MM-yyyy");
+
+      $scope.hide_flg = true;
+      $scope.hide_Reject = true;
+      var admdetails = [];
+      $scope.display = true;
+
+      $scope.school_edit = true;
+      $scope.Study_edit = true;
+      $scope.desc_edit = true;
+      $scope.confirm_edit = true;
+      $scope.emp_edit = true;
+      $scope.hearing_edit = true;
+      $scope.music_edit = true;
+      $scope.sport_edit = true;
+      $scope.other_edit = true;
+      $scope.circum_edit = true;
+      $scope.disab_edit = true;
+      $scope.healthres_edit = true;
+      $scope.health_vision_edit = true;
+      $scope.allAYs = [];
+      $scope.pricont_edit = true;
+      $scope.transreq_edit = true;
+      $scope.lang_sup_edit = true;
+      $scope.behaviour_edit = true;
+      $scope.gifted_edit = true;
+      $scope.med_edit = true;
+      $scope.learnther_edit = true;
+      $scope.spec_edu_edit = true;
+      $scope.lang_sup_edit = true;
+      $scope.falledgrade_edit = true;
+      $scope.behaviour_edit = true;
+      $scope.commun_edit = true;
+      $scope.specActiv_edit = true;
+      $scope.disableparent = true;
+      $scope.grid = true;
+      $scope.save1 = true;
+      $scope.update1 = false;
+      $scope.t = true;
+      $scope.btn_back = false;
+      $scope.ddMMyyyy = $filter("date")(new Date(), "dd-MM-yyyy");
+      $scope.edt = [];
+      var data2 = [];
+      $scope.BUSY = false;
+      ($scope.fathersalutation = []), ($scope.mothersalutation = []);
+      $scope.section = "New";
+      $scope.filtertablediv = true;
+      $scope.show_ea_flag = false;
+      $scope.docurl = ENV.docUrl + $http.defaults.headers.common["schoolId"];
+      $scope.countData = [
+        { val: 10, data: 10 },
+        { val: 25, data: 25 },
+        { val: 50, data: 50 },
+
+        { val: "All", data: "All" },
+      ];
+
+      $scope.collapseAll = function collapse_All() {
+        $(".scroll-up").toggleClass("hide");
+        $(".collapseAll-icon").toggleClass("fa fa-arrow-circle-left");
+        $(".collapseAll-icon").toggleClass("fa fa-arrow-circle-right");
+      };
+      $scope.scrollUp = function scroll_up() {
+        $(".scroll-up").toggleClass("hide");
+        $(".scroll-up-icon").toggleClass("fa fa-arrow-circle-up");
+        $(".scroll-up-icon").toggleClass("fa fa-arrow-circle-down");
+      };
+      // $scope.tableHideDiv21 = function tabke_hide_div21() {
+      $scope.tableHideDiv21 = () => {
+        $(".collapse-up").toggleClass("hide");
+        $(".collapse-up-icon").toggleClass("fa fa-arrow-circle-down");
+        $(".collapse-up-icon").toggleClass("fa fa-arrow-circle-up");
+      };
+
+      $scope.model_open = (data) => {
+        console.log(data);
+        $scope.userData = data;
+        $("#MyModal2").modal("show");
+      };
+
+      $timeout(function () {
+        $("#fixedtable,#fixedtable4").tableHeadFixer({ top: 1 });
+      }, 100);
+
+      $http
+        .get(
+          ENV.apiUrl + "api/common/AdmissionDashboard_dpsdNew/getRegistration"
+        )
+        .then(function (res) {
+          $scope.reg = res.data;
+        });
+
+      $http
+        .get(ENV.apiUrl + "api/common/Attendance/getCuriculum")
+        .then(function (res) {
+          $scope.obj2 = res.data;
+          $scope.dash["curr_code"] = $scope.obj2[0].sims_attendance_cur_code;
+          $scope.curr_code = $scope.obj2[0].sims_attendance_cur_code;
+
+          $scope.getCur(
+            $scope.dash.curr_code,
+            $scope.dash.academic_year,
+            $scope.dash.grade_code,
+            $scope.dash.sims_appl_parameter_reg
+          );
+        });
+
+      $http
+        .get(ENV.apiUrl + "api/common/AdmissionDashboard_dpsdNew/getAlltag")
+        .then(function (res) {
+          $scope.AllCategory = res.data;
+          $scope.edt.sims_admission_tag =
+            $scope.AllCategory[0].sims_admission_tag_code;
+        });
+
+      $scope.getExpand = function () {
+        $timeout(function () {
+          $("#fixedtable,#Table5").tableHeadFixer({ top: 1 });
+        }, 100);
+
+        $scope.show_table = true;
+        if ($("#tab_1").hasClass("selected_menu")) {
+          $scope.filtertablediv = false;
+        }
+        if ($("#tab_2").hasClass("selected_menu")) {
+          $scope.filtertablediv = false;
+        }
+        if ($("#tab_3").hasClass("selected_menu")) {
+          $scope.filtertablediv = false;
+        }
+        if ($("#tab_4").hasClass("selected_menu")) {
+          $scope.filtertablediv = false;
+        }
+        if ($("#tab_5").hasClass("selected_menu")) {
+          $scope.filtertablediv = false;
+        }
+        if ($("#tab_6").hasClass("selected_menu")) {
+          $scope.filtertablediv = true;
+        }
+        if ($("#tab_7").hasClass("selected_menu")) {
+          $scope.filtertablediv = true;
+        }
+        if ($("#tab_8").hasClass("selected_menu")) {
+          $scope.filtertablediv = true;
+        }
+        if ($("#tab_9").hasClass("selected_menu")) {
+          $scope.filtertablediv = true;
+        }
+        if ($("#tab_10").hasClass("selected_menu")) {
+          $scope.filtertablediv = true;
+        }
+        if ($("#tab_11").hasClass("selected_menu")) {
+          $scope.filtertablediv = false;
+        }
+      };
+
+      $scope.back_table = function () {
+        $scope.show_table = false;
+      };
+
+      //to load data for filters dropdown
+      $http
+        .get(
+          ENV.apiUrl +
+            "api/common/AdmissionDashboard_dpsdNew/Getinstituteforfilter?curr_code"
+        )
+        .then(function (Allinstitutefilter) {
+          $scope.institutefilter = Allinstitutefilter.data;
+        });
+      $http
+        .get(
+          ENV.apiUrl + "api/common/AdmissionDashboard_dpsdNew/Getcasteforfilter"
+        )
+        .then(function (Allcastefilter) {
+          $scope.castefilter = Allcastefilter.data;
+        });
+      $http
+        .get(
+          ENV.apiUrl +
+            "api/common/AdmissionDashboard_dpsdNew/Getgenderforfilter"
+        )
+        .then(function (Allgenderfilter) {
+          $scope.genderfilter = Allgenderfilter.data;
+        });
+      //To get Decimal places API
+      //Decimal place manage
+      $http
+        .get(ENV.apiUrl + "api/StudentFee/getDecimalPlaces")
+        .then(function (getDecimal) {
+          $scope.decimal_degit = getDecimal.data;
+          $scope.decimal_dsc = $scope.decimal_degit[0].comp_curcy_dec;
+        });
+
+      //get curiculum
+      $scope.getCur = function (cur_code, acad_yr, grade, reg) {
+        $http
+          .get(
+            ENV.apiUrl +
+              "api/common/getAllAcademicYearDash?cur_code=" +
+              cur_code
+          )
+          .then(function (res) {
+            $scope.obj1 = res.data;
+            $scope.dash["academic_year"] = res.data[0].sims_academic_year;
+
+            $scope.GetGrade(
+              cur_code,
+              $scope.dash.academic_year,
+              $scope.dash.grade_code,
+              $scope.dash.sims_appl_parameter_reg
+            );
+          });
+      };
+
+      //get grade
+      $scope.GetGrade = function (cur, acad_yr, grade, reg) {
+        var b = {
+          opr: "G",
+          CURR_CODE: cur,
+          ACA_YEAR: acad_yr,
+          sims_appl_form_field: "dashM",
+          created_user: $rootScope.globals.currentUser.username,
+        };
+
+        $http
+          .post(
+            ENV.apiUrl + "api/common/SectionScreening/re_regi_dash_Common",
+            b
+          )
+          .then(function (res) {
+            $scope.obj3 = [];
+            if (res.data.table.length > 0) {
+              $scope.obj3 = res.data.table;
+              $scope.dash["grade_code"] = "";
+              $scope.GetInfo(
+                cur,
+                $scope.dash.academic_year,
+                $scope.dash.grade_code,
+                $scope.dash.sims_appl_parameter_reg
+              );
+            }
+          });
+      };
+
+      $scope.GetGradechage = function (cur, acad_yr, grade, reg) {
+        $scope.dash.sims_appl_parameter_reg = "";
+        $scope.GetInfo(cur, acad_yr, grade, reg);
+      };
+
+      //save
+      $scope.saveEA = function () {
+        $http
+          .post(
+            ENV.apiUrl + "api/common/AdmissionDashboard_dpsdNew/CUDUpdateEA",
+            $scope.ea
+          )
+          .then(function (res) {
+            if (res.data) {
+              swal({
+                title: "Alert",
+                text: "Record Updated Successfully",
+                showCloseButton: true,
+                width: 380,
+              });
+              $("#EaOption").modal("hide");
+            } else {
+              swal({
+                title: "Alert",
+                text: "Record Not Updated",
+                showCloseButton: true,
+                width: 380,
+              });
+            }
+          });
+      };
+
+      //edit
+      $scope.editEA = function (str) {
+        $scope.show_ea_flag = true;
+
+        $("#EaOption").modal({ backdrop: "static", keyboard: true });
+        var aaa = { opr: "A" };
+        $http
+          .post(
+            ENV.apiUrl + "api/common/AdmissionDashboard_dpsdNew/EACommon",
+            aaa
+          )
+          .then(function (res) {
+            if (res.data.table.length > 0) {
+              $scope.transfer_status_lst = res.data.table;
+            }
+          });
+
+        var bbb = { opr: "B" };
+        $http
+          .post(
+            ENV.apiUrl + "api/common/AdmissionDashboard_dpsdNew/EACommon",
+            bbb
+          )
+          .then(function (res) {
+            if (res.data.table.length > 0) {
+              $scope.registration_status_lst = res.data.table;
+            }
+          });
+
+        var ccc = { opr: "S", sims_student_enroll_number: str.enroll_no };
+        $http
+          .post(
+            ENV.apiUrl + "api/common/AdmissionDashboard_dpsdNew/EACommon",
+            ccc
+          )
+          .then(function (res) {
+            if (res.data.table.length > 0) {
+              $scope.ea = res.data.table[0];
+              $scope.ea["enroll_no"] = str.enroll_no;
+            }
+          });
+      };
+
+      //get data
+      $scope.GetInfo = function (cur_code, AcadmicYear, gradeCode, reg) {
+        $http
+          .get(
+            ENV.apiUrl +
+              "api/common/AdmissionDashboard_dpsdNew/GetDashTilesDetails?curr_code=" +
+              cur_code +
+              "&AcadmicYear=" +
+              AcadmicYear +
+              "&gradeCode=" +
+              gradeCode
+          )
+          .then(function (res) {
+            console.log(res.data);
+            $scope.dashTiles = res.data;
+          });
+
+        $http
+          .get(
+            ENV.apiUrl +
+              "api/common/AdmissionDashboard_dpsdNew/GetEmail_details?curr_code=" +
+              cur_code +
+              "&AcadmicYear=" +
+              AcadmicYear +
+              "&gradeCode=" +
+              gradeCode
+          )
+          .then(function (res) {
+            $scope.email_lst = res.data;
+          });
+
+        $http
+          .get(
+            ENV.apiUrl +
+              "api/common/AdmissionDashboard_dpsdNew/GetAlert_details?curr_code=" +
+              cur_code +
+              "&AcadmicYear=" +
+              AcadmicYear +
+              "&gradeCode=" +
+              gradeCode
+          )
+          .then(function (res) {
+            $scope.alert_lst = res.data;
+          });
+
+        $http
+          .get(
+            ENV.apiUrl +
+              "api/common/AdmissionDashboard_dpsdNew/GetCalendar_Data?curr_code=" +
+              cur_code +
+              "&AcadmicYear=" +
+              AcadmicYear +
+              "&gradeCode=" +
+              gradeCode
+          )
+          .then(function (res) {
+            $scope.calendar_lst = res.data;
+            $scope.eventsList = [];
+            for (var i = 0; i < res.data.length; i++) {
+              var event = [];
+              event.start = res.data[i].sims_assesment_date;
+              event.end = res.data[i].sims_assesment_date;
+              event.title = res.data[i].event_nm;
+              event.id = i;
+              event.color = "#000";
+              $scope.eventsList.push(event);
+            }
+            $("#calendar").fullCalendar("removeEvents");
+            $("#calendar").fullCalendar("addEventSource", $scope.eventsList);
+            $("#calendar").fullCalendar("refetchEvents");
+          });
+      };
+
+      $scope.email_click = function (x) {
+        x["ishide"] = true;
+      };
+
+      //table data
+      $scope.Resettabledata = function () {
+        $scope.edt.sims_student_gender = "";
+        $scope.edt.castcatagory = "";
+        $scope.edt.institutename = "";
+      };
+
+      $scope.fetchtabledata = function (
+        cur_code,
+        AcadmicYear,
+        gradeCode,
+        adm_status,
+        gender,
+        nationality,
+        employee_code,
+        sibling_enroll,
+        paid_status1,
+        sen_att,
+        castcatagory,
+        institutename,
+        admission_tag,
+        filter
+      ) {
+        $scope.temp1 = {};
+        $scope.btn_visible = adm_status;
+        $scope.maingrid2 = true;
+        $scope.show_ea_flag = false;
+
+        //new
+        if ($("#tab_1").hasClass("selected_menu")) {
+          $scope.filtertablediv = false;
+          var adm_status = "";
+          var filter = "N1";
+        }
+        if ($("#tab_2").hasClass("selected_menu")) {
+          $scope.filtertablediv = false;
+          var adm_status = "W";
+          var filter = "N1";
+        }
+        if ($("#tab_3").hasClass("selected_menu")) {
+          $scope.filtertablediv = false;
+          var adm_status = "S";
+          var filter = "N1";
+        }
+        if ($("#tab_4").hasClass("selected_menu")) {
+          $scope.filtertablediv = false;
+          var adm_status = "C";
+          var filter = "N1";
+        }
+
+        if ($("#tab_5").hasClass("selected_menu")) {
+          $scope.filtertablediv = false;
+          var adm_status = "R";
+          var filter = "N1";
+        }
+        if ($("#tab_11").hasClass("selected_menu")) {
+          $scope.filtertablediv = false;
+          var adm_status = "F";
+          var filter = "N1";
+        }
+
+        $http
+          .get(
+            ENV.apiUrl +
+              "api/common/AdmissionDashboard_dpsdNew/GetStudents1_DMC_filter?curr_code=" +
+              cur_code +
+              "&AcadmicYear=" +
+              AcadmicYear +
+              "&gradeCode=" +
+              gradeCode +
+              "&admission_status=" +
+              adm_status +
+              "&gender_code=" +
+              gender +
+              "&nationality_code=" +
+              nationality +
+              "&employee_code=" +
+              employee_code +
+              "&sibling_enroll=" +
+              sibling_enroll +
+              "&adm_no=" +
+              $scope.temp1.adm_no +
+              "&adm_name=" +
+              $scope.temp1.first_name1 +
+              "&sen_status=" +
+              $scope.sen_status +
+              "&cast_catagory=" +
+              castcatagory +
+              "&institutename=" +
+              institutename +
+              "&admission_tag=" +
+              admission_tag +
+              "&filter=" +
+              filter
+          )
+          .then(function (res) {
+            $scope.dash_data = res.data;
+            $scope.grid = true;
+            $scope.maingrid1 = true;
+            $scope.currentPage = 1;
+            $scope.totalItems = $scope.dash_data.length;
+            $scope.todos = $scope.dash_data;
+
+            $scope.makeTodos();
+
+            if ($scope.dash_data.length > 0) {
+              commonFunctionsService.updateAgeColumn($scope.dash_data);
+            } else {
+              swal({
+                title: "Alert",
+                text: "No Record Found",
+                showCloseButton: true,
+                width: 380,
+              });
+            }
+          });
+      };
+
+      //get all data
+      $scope.getalldata = function (
+        cur_code,
+        AcadmicYear,
+        gradeCode,
+        adm_status,
+        gender,
+        nationality,
+        employee_code,
+        sibling_enroll,
+        paid_status1,
+        sen_att
+      ) {
+        $scope.dash_data = [];
+        $(".tiles").removeClass("selected_menu");
+        if (adm_status === "") $("#tab_1").addClass("selected_menu");
+        else if (sen_att === "1") $("#tab_6").addClass("selected_menu");
+        else if (adm_status === "W") $("#tab_2").addClass("selected_menu");
+        else if (adm_status === "S") $("#tab_3").addClass("selected_menu");
+        else if (adm_status === "C") $("#tab_4").addClass("selected_menu");
+        else if (adm_status === "R") $("#tab_5").addClass("selected_menu");
+        else if (adm_status === "F") $("#tab_11").addClass("selected_menu");
+        console.log("helloo");
+
+        $scope.temp1 = {};
+        $scope.btn_visible = adm_status;
+        $scope.paid_status = paid_status1;
+        $scope.sen_status = sen_att;
+        $scope.maingrid2 = true;
+        $scope.show_ea_flag = false;
+        if (adm_status == "S") {
+          $scope.filtertablediv = false;
+          $scope.btn_nationality = null;
+          $scope.gender = null;
+          $scope.btn_emp = null;
+          $scope.hide_Reject = true;
+          $scope.btn_siblingenroll = null;
+          $scope.btn_prospect = false;
+          $scope.btn_reject = false;
+          $scope.btn_unreject = false;
+          $scope.btn_selected = true;
+        }
+
+        if (adm_status == "W") {
+          $scope.filtertablediv = false;
+          $scope.btn_nationality = null;
+          $scope.gender = null;
+          $scope.btn_emp = null;
+          $scope.hide_Reject = true;
+          $scope.btn_siblingenroll = null;
+
+          $scope.btn_prospect = false;
+          $scope.btn_reject = false;
+          $scope.btn_unreject = true;
+          $scope.btn_selected = false;
+        }
+        if (adm_status == "R") {
+          $scope.filtertablediv = false;
+          $scope.btn_nationality = null;
+          $scope.gender = null;
+          $scope.btn_emp = null;
+          $scope.btn_siblingenroll = null;
+          $scope.hide_Reject = false;
+          $scope.btn_prospect = true;
+          $scope.btn_reject = true;
+          $scope.btn_unreject = true;
+          $scope.btn_selected = true;
+        }
+        if (adm_status == "C") {
+          $scope.filtertablediv = false;
+          $scope.btn_nationality = null;
+          $scope.gender = null;
+          $scope.btn_emp = null;
+          $scope.btn_siblingenroll = null;
+          $scope.btn_prospect = true;
+          $scope.hide_Reject = true;
+          $scope.btn_reject = true;
+          $scope.btn_unreject = false;
+          $scope.btn_selected = true;
+        }
+        if (adm_status == "") {
+          $scope.filtertablediv = false;
+          $scope.btn_prospect = true;
+          $scope.btn_reject = false;
+          $scope.hide_Reject = false;
+          $scope.btn_unreject = false;
+        }
+        if (adm_status == "1") {
+          adm_status = "W";
+        }
+        if (adm_status == "2") {
+          adm_status = "R";
+        }
+        console.log(gender);
+        $http
+          .get(
+            ENV.apiUrl +
+              "api/common/AdmissionDashboard_dpsdNew/GetStudents1_DMC?curr_code=" +
+              cur_code +
+              "&AcadmicYear=" +
+              AcadmicYear +
+              "&gradeCode=" +
+              gradeCode +
+              "&admission_status=" +
+              adm_status +
+              "&gender_code=" +
+              gender +
+              "&nationality_code=" +
+              nationality +
+              "&employee_code=" +
+              employee_code +
+              "&sibling_enroll=" +
+              sibling_enroll +
+              "&adm_no=" +
+              $scope.temp1.adm_no +
+              "&adm_name=" +
+              $scope.temp1.first_name1 +
+              "&sen_status=" +
+              $scope.sen_status
+          )
+          .then(function (res) {
+            $scope.dash_data = res.data;
+            $scope.grid = true;
+            $scope.maingrid1 = true;
+            $scope.currentPage = 1;
+            $scope.totalItems = $scope.dash_data.length;
+            $scope.todos = $scope.dash_data;
+            console.log(res);
+            $scope.makeTodos();
+
+            if ($scope.dash_data.length > 0) {
+              // commonFunctionsService.updateAgeColumn($scope.dash_data);
+              console.log("hello2");
+            } else {
+              swal({
+                title: "Alert",
+                text: "No Record Found",
+                showCloseButton: true,
+                width: 380,
+              });
+            }
+          });
+      };
+
+      $scope.makeTodos = function () {
+        var rem = parseInt($scope.totalItems % $scope.numPerPage);
+        if (rem == "0") {
+          $scope.pagersize = parseInt($scope.totalItems / $scope.numPerPage);
+        } else {
+          $scope.pagersize =
+            parseInt($scope.totalItems / $scope.numPerPage) + 1;
+        }
+        var begin = ($scope.currentPage - 1) * $scope.numPerPage;
+        var end = parseInt(begin) + parseInt($scope.numPerPage);
+
+        $scope.filteredTodos = $scope.todos.slice(begin, end);
+      };
+
+      $scope.size = function (str) {
+        if (str == 10 || str == 20 || str == "All") {
+          if (str == "All") {
+            $scope.currentPage = "1";
+            $scope.filteredTodos = $scope.dash_data;
+            $scope.pager = false;
+          } else {
+            $scope.pager = true;
+            $scope.pagesize = str;
+            $scope.currentPage = 1;
+            $scope.numPerPage = str;
+            $scope.makeTodos();
+          }
+        } else {
+        }
+        $scope.numPerPage = str;
+      };
+
+      $scope.index = function (str) {
+        $scope.pageindex = str;
+        $scope.currentPage = str;
+        $scope.makeTodos();
+        $scope.row1 = "";
+      };
+
+      //search
+      $scope.searched = function (valLists, toSearch) {
+        return _.filter(
+          valLists,
+
+          function (i) {
+            /* Search Text in all  fields */
+            return searchUtil(i, toSearch);
+          }
+        );
+      };
+
+      $scope.search = function () {
+        $scope.todos = $scope.searched($scope.dash_data, $scope.searchText);
+        $scope.totalItems = $scope.todos.length;
+        $scope.currentPage = "1";
+        if ($scope.searchText == "") {
+          $scope.todos = $scope.dash_data;
+        }
+        $scope.makeTodos();
+      };
+
+      function searchUtil(item, toSearch) {
+        /* Search Text in all 3 fields */
+        return item.admission_number
+          .toLowerCase()
+          .indexOf(toSearch.toLowerCase()) > -1 ||
+          item.grade_name.toLowerCase().indexOf(toSearch.toLowerCase()) > -1 ||
+          item.gender.toLowerCase().indexOf(toSearch.toLowerCase()) > -1 ||
+          item.stud_full_name.toLowerCase().indexOf(toSearch.toLowerCase()) > -1
+          ? true
+          : false;
+      }
+
+      //show
+      $scope.show_approved = function (
+        cur_code,
+        AcadmicYear,
+        gradeCode,
+        adm_status,
+        gender,
+        nationality,
+        employee_code,
+        sibling_enroll,
+        paid_status1,
+        sen_att
+      ) {
+        $(".tiles").removeClass("selected_menu");
+
+        if (adm_status == "B1") $("#tab_9").addClass("selected_menu");
+        else if (adm_status == "B2") $("#tab_10").addClass("selected_menu");
+
+        $scope.show_ea_flag = true;
+        $http
+          .get(
+            ENV.apiUrl +
+              "api/common/AdmissionDashboard_dpsdNew/GetStudentsApproved?curr_code=" +
+              cur_code +
+              "&AcadmicYear=" +
+              AcadmicYear +
+              "&gradeCode=" +
+              gradeCode +
+              "&admission_status=" +
+              adm_status +
+              "&gender_code=" +
+              gender +
+              "&nationality_code=" +
+              nationality +
+              "&employee_code=" +
+              "" +
+              "&sibling_enroll=" +
+              "" +
+              "&adm_no=" +
+              "" +
+              "&adm_name=" +
+              "" +
+              "&sen_status=" +
+              ""
+          )
+          .then(function (res) {
+            $scope.dash_data = res.data;
+            $scope.grid = true;
+            $scope.maingrid1 = true;
+
+            if ($scope.dash_data.length > 0) {
+              // commonFunctionsService.updateAgeColumn($scope.dash_data);
+            } else {
+              swal({
+                title: "Alert",
+                text: "No Record Found",
+                showCloseButton: true,
+                width: 380,
+              });
+            }
+          });
+      };
+
+      $scope.showPaid = function () {
+        $scope.show_ea_flag = false;
+
+        $(".tiles").removeClass("selected_menu");
+        $("#tab_7").addClass("selected_menu");
+
+        var ob = {
+          curr_code: $scope.dash.curr_code,
+          AcadmicYear: $scope.dash.academic_year,
+          gradeCode: $scope.dash.grade_code,
+          admission_status: "W",
+          gender_code: "",
+          nationality_code: "",
+          employee_code: "",
+          sibling_enroll: "",
+        };
+        if (ob.admission_status == "W") {
+          $scope.btn_prospect = false;
+          $scope.btn_reject = false;
+        }
+        if (ob.admission_status == "R") {
+          $scope.btn_prospect = false;
+          $scope.btn_reject = true;
+        }
+        if (ob.admission_status == "C") {
+          $scope.btn_prospect = true;
+          $scope.btn_reject = false;
+        }
+        if (ob.admission_status == "") {
+          $scope.btn_prospect = true;
+          $scope.btn_reject = true;
+        }
+        if (ob.admission_status == "1") {
+          ob.admission_status = "W";
+        }
+        if (ob.admission_status == "2") {
+          ob.admission_status = "R";
+        }
+
+        $http
+          .post(
+            ENV.apiUrl +
+              "api/common/AdmissionDashboard_asd/waitingPaidStudents",
+            ob
+          )
+          .then(function (res) {
+            $scope.dash_data = res.data;
+            $scope.grid = true;
+            $scope.maingrid1 = true;
+            $scope.currentPage = 1;
+            $scope.totalItems = $scope.dash_data.length;
+            $scope.todos = $scope.dash_data;
+
+            $scope.makeTodos();
+
+            if ($scope.dash_data.length > 0) {
+              commonFunctionsService.updateAgeColumn($scope.dash_data);
+            } else {
+              swal({
+                title: "Alert",
+                text: "No Record Found",
+                showCloseButton: true,
+                width: 380,
+              });
+            }
+          });
+      };
+
+      $scope.showUnPaid = function () {
+        $(".tiles").removeClass("selected_menu");
+        $("#tab_8").addClass("selected_menu");
+        $scope.show_ea_flag = false;
+        var ob = {
+          curr_code: $scope.dash.curr_code,
+          AcadmicYear: $scope.dash.academic_year,
+          gradeCode: $scope.dash.grade_code,
+          admission_status: "W",
+          gender_code: "",
+          nationality_code: "",
+          employee_code: "",
+          sibling_enroll: "",
+        };
+        if (ob.admission_status == "W") {
+          $scope.btn_prospect = false;
+          $scope.btn_reject = false;
+        }
+        if (ob.admission_status == "R") {
+          $scope.btn_prospect = false;
+          $scope.btn_reject = true;
+        }
+        if (ob.admission_status == "C") {
+          $scope.btn_prospect = true;
+          $scope.btn_reject = false;
+        }
+        if (ob.admission_status == "") {
+          $scope.btn_prospect = true;
+          $scope.btn_reject = true;
+        }
+        if (ob.admission_status == "1") {
+          ob.admission_status = "W";
+        }
+        if (ob.admission_status == "2") {
+          ob.admission_status = "R";
+        }
+
+        $http
+          .post(
+            ENV.apiUrl +
+              "api/common/AdmissionDashboard_asd/waitingUnPaidStudents",
+            ob
+          )
+          .then(function (res) {
+            $scope.dash_data = res.data;
+            $scope.grid = true;
+            $scope.maingrid1 = true;
+            $scope.currentPage = 1;
+            $scope.totalItems = $scope.dash_data.length;
+            $scope.todos = $scope.dash_data;
+
+            $scope.makeTodos();
+
+            if ($scope.dash_data.length > 0) {
+              commonFunctionsService.updateAgeColumn($scope.dash_data);
+            } else {
+              swal({
+                title: "Alert",
+                text: "No Record Found",
+                showCloseButton: true,
+                width: 380,
+              });
+            }
+          });
+      };
+      $scope.condenseCal = function condense_Cal() {
+        $(".regiMenu").toggleClass("col-md-9");
+        $(".regiMenu").toggleClass("col-md-12 p-r-11");
+        $(".calMenu").toggleClass("hide");
+        $(".collapse-btn").toggleClass("col-md-3");
+        $(".collapse-btn-icon").toggleClass("fa fa-arrow-circle-right");
+        $(".collapse-btn-icon").toggleClass("fa fa-arrow-circle-left");
+        $(".collapse-btn").toggleClass("collapse-btn-shrt");
+
+        // $scope.collapseTop = commonFunctionsService.collapseTop;
+        //  $scope.collapseLeft = commonFunctionsService.collapseLeft;
+        // $scope.collapseBoth = commonFunctionsService.collapseBoth;
+      };
+
+      //use
+      $scope.view_form = false;
+      $scope.link = function (str, admobj) {
+        $state.go("main.dashM.OLmodrn", { admission_num: str, Class: admobj });
+        $scope.admobj = admobj;
+        $scope.adm_number = str;
+        $scope.view_form = true;
+        $scope.show_table = false;
+        $scope.edt = {
+          admission_date: $scope.ddMMyyyy,
+          tent_join_date: $scope.ddMMyyyy,
+          comm_date: $scope.ddMMyyyy,
+          declaration_status: true,
+        };
+
+        var param = str;
+        if ($scope.about_lst.length <= 0) {
+          $http
+            .get(ENV.apiUrl + "api/common/ProspectDashboard/GetAboutUsData")
+            .then(function (res) {
+              $scope.about_lst = res.data;
+              console.log(res.data);
+            });
+        }
+
+        if ($scope.school_lst.length <= 0) {
+          $http
+            .get(ENV.apiUrl + "api/common/ProspectDashboard/GetPreviousSchool")
+            .then(function (res) {
+              $scope.school_lst = res.data;
+              console.log(res.data);
+            });
+        }
+
+        $http
+          .get(
+            ENV.apiUrl +
+              "api/common/AdmissionDashboard_dpsdNew/GetCriteriaName?admission_num=" +
+              param
+          )
+          .then(function (res) {
+            $scope.Upload_doc_datails = res.data;
+            console.log(res.data);
+
+            for (var i = 0; i < $scope.Upload_doc_datails.length; i++) {
+              $scope.Upload_doc_datails[i] = res.data[i];
+              $scope.visible = [];
+              $scope.visible = res.data[i].sims_admission_doc_path.split(",");
+              $scope.Upload_doc_datails[i].path = $scope.visible;
+            }
+          });
+
+        $http
+          .get(
+            ENV.apiUrl +
+              "api/common/AdmissionDashboard_dpsdNew/GetcriteriaMarks?admission_num=" +
+              param
+          )
+          .then(function (res) {
+            $scope.screen_datails_adm = res.data;
+            console.log(res.data);
+          });
+
+        $scope.screeningMarks = function () {
+          $http
+            .get(
+              ENV.apiUrl +
+                "api/common/AdmissionDashboard_dpsdNew/GetcriteriaMarks?admission_num=" +
+                param
+            )
+            .then(function (res) {
+              $scope.screen_datails = res.data;
+              $scope.totalItems2 = $scope.screen_datails.length;
+              $scope.todos2 = $scope.screen_datails;
+              $scope.makeTodos2();
+              $scope.Screening = true;
+              $scope.maingrid1 = false;
+              $scope.maingrid2 = false;
+              $scope.t = true;
+              console.log(res.data);
+            });
+        };
+
+        $scope.makeTodos2 = function () {
+          var rem = parseInt($scope.totalItems2 % $scope.numPerPage2);
+          if (rem == "0") {
+            $scope.pagersize2 = parseInt(
+              $scope.totalItems2 / $scope.numPerPage2
+            );
+          } else {
+            $scope.pagersize2 =
+              parseInt($scope.totalItems2 / $scope.numPerPage2) + 1;
+          }
+          var begin2 = ($scope.currentPage2 - 1) * $scope.numPerPage2;
+          var end2 = parseInt(begin2) + parseInt($scope.numPerPage2);
+
+          $scope.filteredTodos2 = $scope.todos2.slice(begin2, end2);
+        };
+
+        $scope.size2 = function (str) {
+          $scope.pagesize2 = str;
+          $scope.currentPage2 = 1;
+          $scope.numPerPage2 = str;
+          $scope.makeTodos2();
+        };
+
+        $scope.index2 = function (str) {
+          $scope.pageindex2 = str;
+          $scope.currentPage2 = str;
+          $scope.makeTodos2();
+        };
+
+        //search
+        $scope.searched2 = function (valLists, toSearch) {
+          return _.filter(valLists, function (i) {
+            /* Search Text in all  fields */
+            return searchUtil2(i, toSearch);
+          });
+        };
+
+        $scope.search2 = function () {
+          $scope.todos2 = $scope.searched2(
+            $scope.screen_datails,
+            $scope.searchText2
+          );
+          $scope.totalItems2 = $scope.todos2.length;
+          $scope.currentPage2 = "1";
+          if ($scope.searchText2 == "") {
+            $scope.todos2 = $scope.screen_datails;
+          }
+          $scope.makeTodos2();
+        };
+
+        function searchUtil2(item, toSearch) {
+          /* Search Text in all 3 fields */
+          return item.sims_admission_criteria_code
+            .toLowerCase()
+            .indexOf(toSearch.toLowerCase()) > -1 ||
+            item.sims_criteria_name_en
+              .toLowerCase()
+              .indexOf(toSearch.toLowerCase()) > -1
+            ? true
+            : false;
+        }
+
+        //Update_screening_details
+        $scope.screeningModal_Cancel = function () {
+          var data = $scope.screen_datails;
+          $http
+            .post(
+              ENV.apiUrl +
+                "api/common/AdmissionDashboard_dpsdNew/CUD_UpdateAdmissionMarks",
+              data
+            )
+            .then(function (res) {
+              $scope.display = true;
+              $scope.msg1 = res.data;
+              console.log(res.data);
+
+              if ($scope.msg1.messageType > 0) {
+                swal({
+                  title: "Admission Marks",
+                  text: "'" + $scope.msg1.strMessage + "'",
+                  showCloseButton: true,
+                  width: 380,
+                }).then(function (isConfirm) {
+                  if (isConfirm) {
+                    $scope.Screening = false;
+                    $scope.maingrid1 = true;
+                    $scope.getalldata(
+                      $scope.edt_dash.curr_code,
+                      $scope.edt_dash.academic_year,
+                      $scope.edt_dash.grade_code,
+                      $scope.btn_visible,
+                      $scope.gender,
+                      $scope.btn_nationality,
+                      $scope.btn_emp,
+                      $scope.btn_siblingenroll,
+                      $scope.paid_status,
+                      ""
+                    );
+                  }
+                });
+              }
+            });
+        };
+
+        $scope.screeningModal_Reset = function () {
+          $scope.Screening = false;
+          $scope.maingrid1 = true;
+          $scope.maingrid2 = true;
+        };
+
+        $http
+          .get(
+            ENV.apiUrl +
+              "api/TelephonicConversationDetails/get_TelephonicConversationDetails?pros=" +
+              admobj.pros_num
+          )
+          .then(function (res1) {
+            $scope.tele_lst = res1.data;
+            console.log(res.data);
+          });
+
+        $http
+          .get(
+            ENV.apiUrl +
+              "api/common/AdmissionDashboard_dpsdNew/GetAdm_Email_details?admission_no=" +
+              param
+          )
+          .then(function (res) {
+            $scope.email_list_adm = res.data;
+            console.log(res.data);
+          });
+      };
+
+      $scope.GetAllTeacherName = [];
+
+      $scope.show_representative_fun = function () {
+        $scope.show_representative = true;
+        if ($scope.GetAllTeacherName.length <= 0) {
+          $http
+            .post(ENV.apiUrl + "api/MapingController/SearchEmployee")
+            .then(function (dataEMPRecord) {
+              $scope.GetAllTeacherName = dataEMPRecord.data;
+            });
+        }
+      };
+
+      $scope.Change_Representative = function () {
+        swal({
+          title: "",
+          text: "Do you want to change representative ?",
+          showCloseButton: true,
+          showCancelButton: true,
+          confirmButtonText: "Yes",
+          width: 380,
+          cancelButtonText: "No",
+        }).then(function (isConfirm) {
+          if (isConfirm) {
+            var temp_sending_data = [];
+            var temp_employee = $scope.admobj.sims_ename.split("/");
+            var temp = {
+              created_by: $rootScope.globals.currentUser.username,
+              sims_application_pros_adm_status:
+                $scope.admobj.admission_status_code,
+              sims_admission_number: $scope.admobj.admission_number,
+              sims_employee_ID: temp_employee[0],
+            };
+
+            temp_sending_data.push(temp);
+
+            $http
+              .post(
+                ENV.apiUrl + "api/MapingController/insertdata",
+                temp_sending_data
+              )
+              .then(function (msg) {
+                $scope.msg1 = msg.data;
+              });
+          }
+        });
+        $scope.show_representative = false;
+      };
+
+      $scope.back = function () {
+        $scope.view_form = false;
+      };
+
+      $scope.printDetails = function () {
+        $scope.report_show = true;
+        $("#viewPrintModal").modal("show");
+        $http
+          .get(
+            ENV.apiUrl + "api/common/AdmissionDashboard_dpsdNew/GetAdm_dashRpt"
+          )
+          .then(function (res) {
+            var rname = res.data;
+            var data = {
+              location: rname,
+              parameter: {
+                admission_no: $scope.admobj.admission_number,
+              },
+              state: "main.Sim615",
+              ready: function () {
+                this.refreshReport();
+              },
+            };
+
+            window.localStorage["ReportDetails"] = JSON.stringify(data);
+
+            //For Report Tool
+            try {
+              $scope.rpt = JSON.parse(window.localStorage["ReportDetails"]);
+
+              $scope.location = $scope.rpt.location;
+              $scope.parameter = $scope.rpt.parameter;
+              $scope.state = $scope.rpt.state;
+            } catch (ex) {}
+            var s;
+
+            s = "SimsReports." + $scope.location + ",SimsReports";
+
+            var service_url = AuthenticationService.GetRpt_url();
+
+            $scope.parameters = {};
+
+            $("#reportViewerAdm").telerik_ReportViewer({
+              serviceUrl: service_url,
+
+              viewMode: telerikReportViewer.ViewModes.INTERACTIVE,
+              scaleMode: telerikReportViewer.ScaleModes.SPECIFIC,
+              scale: 1.0,
+              ready: function () {},
+            });
+
+            var reportViewer = $("#reportViewerAdm").data(
+              "telerik_ReportViewer"
+            );
+            reportViewer.reportSource({
+              report: s,
+              parameters: $scope.parameter,
+            });
+            setInterval(function () {
+              $("#k-item k-state-default k-state-disabled").css({
+                display: "block",
+              });
+              $(".trv-report-viewer input[type=number]").css({
+                "min-height": "0px",
+              });
+            }, 1000);
+
+            $timeout(function () {
+              $("#k-item k-state-default k-state-disabled").css({
+                display: "block",
+              });
+              $(".trv-report-viewer input[type=number]").css({
+                "min-height": "0px",
+              });
+            }, 100);
+          });
+      };
+
+      $scope.printDetails = function (str) {
+        $scope.report_show = true;
+        $("#viewPrintModal").modal("show");
+        $http
+          .get(
+            ENV.apiUrl + "api/common/AdmissionDashboard_dpsdNew/GetAdm_dashRpt"
+          )
+          .then(function (res) {
+            var rname = res.data;
+            var data = {
+              location: rname,
+              parameter: {
+                admission_no: str,
+              },
+              state: "main.Sim615",
+              ready: function () {
+                this.refreshReport();
+              },
+            };
+
+            window.localStorage["ReportDetails"] = JSON.stringify(data);
+
+            //For Report Tool
+            try {
+              $scope.rpt = JSON.parse(window.localStorage["ReportDetails"]);
+
+              $scope.location = $scope.rpt.location;
+              $scope.parameter = $scope.rpt.parameter;
+              $scope.state = $scope.rpt.state;
+            } catch (ex) {}
+            var s;
+
+            s = "SimsReports." + $scope.location + ",SimsReports";
+
+            var service_url = AuthenticationService.GetRpt_url();
+
+            $scope.parameters = {};
+
+            $("#reportViewerAdm").telerik_ReportViewer({
+              serviceUrl: service_url,
+
+              viewMode: telerikReportViewer.ViewModes.INTERACTIVE,
+              scaleMode: telerikReportViewer.ScaleModes.SPECIFIC,
+              scale: 1.0,
+              ready: function () {},
+            });
+
+            var reportViewer = $("#reportViewerAdm").data(
+              "telerik_ReportViewer"
+            );
+            reportViewer.reportSource({
+              report: s,
+              parameters: $scope.parameter,
+            });
+            setInterval(function () {
+              $("#k-item k-state-default k-state-disabled").css({
+                display: "block",
+              });
+              $(".trv-report-viewer input[type=number]").css({
+                "min-height": "0px",
+              });
+            }, 1000);
+
+            $timeout(function () {
+              $("#k-item k-state-default k-state-disabled").css({
+                display: "block",
+              });
+              $(".trv-report-viewer input[type=number]").css({
+                "min-height": "0px",
+              });
+            }, 100);
+          });
+      };
+
+      $scope.printDetails1 = function () {
+        $scope.report_show = true;
+        $("#viewPrintModal").modal("show");
+
+        $http
+          .get(
+            ENV.apiUrl + "api/common/AdmissionDashboard_dpsdNew/GetAdm_dashRpt"
+          )
+          .then(function (res) {
+            var rname = res.data;
+            var data = {
+              location: rname,
+              parameter: {
+                admission_no: $scope.admobj.admission_number,
+              },
+              state: "main.Sim615",
+              ready: function () {
+                this.refreshReport();
+              },
+            };
+
+            window.localStorage["ReportDetails"] = JSON.stringify(data);
+
+            //For Report Tool
+            try {
+              $scope.rpt = JSON.parse(window.localStorage["ReportDetails"]);
+
+              $scope.location = $scope.rpt.location;
+              $scope.parameter = $scope.rpt.parameter;
+              $scope.state = $scope.rpt.state;
+            } catch (ex) {}
+            var s;
+
+            s = "SimsReports." + $scope.location + ",SimsReports";
+
+            var service_url = AuthenticationService.GetRpt_url();
+
+            $scope.parameters = {};
+
+            $("#reportViewerAdm").telerik_ReportViewer({
+              serviceUrl: service_url,
+
+              viewMode: telerikReportViewer.ViewModes.INTERACTIVE,
+              scaleMode: telerikReportViewer.ScaleModes.SPECIFIC,
+              scale: 1.0,
+              ready: function () {},
+            });
+
+            var reportViewer = $("#reportViewerAdm").data(
+              "telerik_ReportViewer"
+            );
+            reportViewer.reportSource({
+              report: s,
+              parameters: $scope.parameter,
+            });
+            setInterval(function () {
+              $("#k-item k-state-default k-state-disabled").css({
+                display: "block",
+              });
+              $(".trv-report-viewer input[type=number]").css({
+                "min-height": "0px",
+              });
+            }, 1000);
+
+            $timeout(function () {
+              $("#k-item k-state-default k-state-disabled").css({
+                display: "block",
+              });
+              $(".trv-report-viewer input[type=number]").css({
+                "min-height": "0px",
+              });
+            }, 100);
+          });
+      };
+
+      $scope.Cancel = function () {
+        $("#viewPrintModal").modal("hide");
+      };
+
+      //getSelected
+      $scope.getSelected = function () {
+        admdetails = [];
+        $scope.is_completed = false;
+        $scope.btn_prospect = false;
+        for (var i = 0; i < $scope.dash_data.length; i++) {
+          var t = $scope.dash_data[i].admission_number;
+          var v = document.getElementById(t);
+
+          if ($scope.dash_data[i].admission_number1) {
+            admdetails =
+              admdetails + $scope.dash_data[i].admission_number + ",";
+          }
+        }
+        if (admdetails.length == 0) {
+          swal({
+            title: "Alert",
+            text: "Please select atleast 1 applicant",
+            showCloseButton: true,
+            width: 380,
+          });
+        } else if ($scope.is_completed) {
+          swal({
+            title: "Alert",
+            text: "The registration fee has not been paid in order to move the admission to the next stage.",
+            showCloseButton: true,
+            width: 380,
+          });
+        } else {
+          swal({
+            title: "",
+            text: "The applicants will be Selected",
+            showCloseButton: true,
+            showCancelButton: true,
+            confirmButtonText: "Yes",
+            width: 380,
+            cancelButtonText: "No",
+          }).then(function (isConfirm) {
+            if (isConfirm) {
+              $scope.OkselectedAdm();
+            }
+          });
+        }
+      };
+
+      $scope.OkselectedAdm = function () {
+        var data = $scope.dash;
+        data.admission_number = admdetails;
+        data.user_code = $rootScope.globals.currentUser.username;
+        data.status = "S";
+        data.opr = "J";
+
+        $http
+          .post(
+            ENV.apiUrl + "api/common/Admission_dpsd/AdmissionStatusOpr",
+            data
+          )
+          .then(function (res) {
+            $scope.display = true;
+            $scope.msg1 = res.data;
+
+            if ($scope.msg1 > 0) {
+              swal({
+                text: "Updated Successfully.",
+                imageUrl: "assets/img/check.png",
+                showCloseButton: true,
+                width: 380,
+              });
+              $scope.getalldata(
+                $scope.dash.curr_code,
+                $scope.dash.academic_year,
+                $scope.dash.grade_code,
+                $scope.btn_visible,
+                $scope.gender,
+                $scope.btn_nationality,
+                $scope.btn_emp,
+                $scope.btn_siblingenroll,
+                $scope.paid_status,
+                ""
+              );
+              $scope.GetInfo(
+                $scope.dash.curr_code,
+                $scope.dash.academic_year,
+                $scope.dash.grade_code,
+                $scope.btn_visible
+              );
+            }
+          });
+      };
+
+      //Reject the Admissions
+      $scope.getReject = function () {
+        $("#RejectOption").modal("hide");
+
+        admdetails = [];
+        for (var i = 0; i < $scope.dash_data.length; i++) {
+          var t = $scope.dash_data[i].admission_number;
+          var v = document.getElementById(t);
+          if ($scope.dash_data[i].admission_number1) {
+            admdetails =
+              admdetails + $scope.dash_data[i].admission_number + ",";
+          }
+        }
+        if (admdetails.length == 0) {
+          swal({
+            title: "Alert",
+            text: "Please select atleast 1 applicant",
+            showCloseButton: true,
+            width: 380,
+          });
+        } else {
+          swal({
+            title: "",
+            text: "The selected applications will be rejected",
+            showCloseButton: true,
+            showCancelButton: true,
+            confirmButtonText: "Yes",
+            width: 380,
+            cancelButtonText: "No",
+          }).then(function (isConfirm) {
+            if (isConfirm) {
+              $scope.OkRejectadm();
+            }
+          });
+        }
+      };
+
+      $scope.OkRejectadm = function () {
+        var data = $scope.dash;
+        data.admission_number = admdetails;
+        data.user_code = $rootScope.globals.currentUser.username;
+        data.sims_student_attribute6 = $scope.withdrawl;
+        data.sims_student_attribute11 = $scope.sims_student_attribute11;
+
+        data.status = "R";
+        data.opr = "J";
+        var temp = {
+          admission_number: admdetails,
+          user_code: $rootScope.globals.currentUser.username,
+          sims_student_attribute6: $scope.withdrawl,
+          sims_student_attribute11: $scope.sims_student_attribute11,
+          status: "R",
+          opr: "J",
+        };
+        if (
+          $http.defaults.headers.common["schoolId"] == "tiadxb" ||
+          $http.defaults.headers.common["schoolId"] == "tiashj"
+        )
+          $scope.api_url_new =
+            "api/common/Admission_dpsd/AdmissionStatusOprReject_Leams";
+        else
+          $scope.api_url_new =
+            "api/common/Admission_dpsd/AdmissionStatusOprReject";
+
+        $http.post(ENV.apiUrl + $scope.api_url_new, temp).then(function (res) {
+          $scope.display = true;
+          $scope.msg1 = res.data;
+
+          if ($scope.msg1 > 0) {
+            $scope.getalldata(
+              $scope.dash.curr_code,
+              $scope.dash.academic_year,
+              $scope.dash.grade_code,
+              $scope.btn_visible,
+              $scope.gender,
+              $scope.btn_nationality,
+              $scope.btn_emp,
+              $scope.btn_siblingenroll,
+              $scope.paid_status,
+              ""
+            );
+            $scope.GetInfo(
+              $scope.dash.curr_code,
+              $scope.dash.academic_year,
+              $scope.dash.grade_code,
+              $scope.btn_visible
+            );
+          }
+        });
+      };
+
+      $scope.withdrawl = "P";
+      $scope.rejectok = function () {
+        $("#RejectOption").modal({ backdrop: "static", keyboard: true });
+      };
+
+      //UnReject the Admissions
+      $scope.getUnReject = function () {
+        admdetails = [];
+        for (var i = 0; i < $scope.dash_data.length; i++) {
+          var t = $scope.dash_data[i].admission_number;
+          var v = document.getElementById(t);
+          if ($scope.dash_data[i].admission_number1) {
+            admdetails =
+              admdetails + $scope.dash_data[i].admission_number + ",";
+          }
+        }
+        if (admdetails.length == 0) {
+          swal({
+            title: "Alert",
+            text: "Please select atleast 1 applicant",
+            showCloseButton: true,
+            width: 380,
+          });
+        } else {
+          swal({
+            title: "",
+            text: "The selected applications will be Un-rejected",
+            showCloseButton: true,
+            showCancelButton: true,
+            confirmButtonText: "Yes",
+            width: 380,
+            cancelButtonText: "No",
+          }).then(function (isConfirm) {
+            if (isConfirm) {
+              $scope.OkUnRejectadm();
+            }
+          });
+        }
+      };
+
+      $scope.OkUnRejectadm = function () {
+        var data = $scope.dash;
+        data.admission_number = admdetails;
+        data.user_code = $rootScope.globals.currentUser.username;
+        data.status = "W";
+        data.opr = "J";
+        var temp = {
+          admission_number: admdetails,
+          user_code: $rootScope.globals.currentUser.username,
+          status: "W",
+          opr: "J",
+        };
+
+        $http
+          .post(
+            ENV.apiUrl + "api/common/Admission_dpsd/AdmissionStatusOpr",
+            temp
+          )
+          .then(function (res) {
+            $scope.display = true;
+            $scope.msg1 = res.data;
+
+            if ($scope.msg1 > 0) {
+              $scope.getalldata(
+                $scope.dash.curr_code,
+                $scope.dash.academic_year,
+                $scope.dash.grade_code,
+                $scope.btn_visible,
+                $scope.gender,
+                $scope.btn_nationality,
+                $scope.btn_emp,
+                $scope.btn_siblingenroll,
+                $scope.paid_status,
+                ""
+              );
+              $scope.GetInfo(
+                $scope.dash.curr_code,
+                $scope.dash.academic_year,
+                $scope.dash.grade_code,
+                $scope.btn_visible
+              );
+            }
+          });
+      };
+
+      //export
+      $scope.exportData = function () {
+        var check = true;
+
+        if (check === true) {
+          swal({
+            title: "",
+            text: "Are you sure you want to Save?",
+            showCloseButton: true,
+            showCancelButton: true,
+            confirmButtonText: "Yes",
+            width: 380,
+            cancelButtonText: "No",
+          }).then(function (isConfirm) {
+            if (isConfirm) {
+              var blob = new Blob(
+                [document.getElementById("demo1").innerHTML],
+                {
+                  type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=utf-8",
+                }
+              );
+              saveAs(blob, "Report.xls");
+            }
+          });
+        } else {
+          swal({
+            title: "Alert",
+            text: "Report Not Save",
+            showCloseButton: true,
+            width: 380,
+          });
+        }
+      };
+
+      //copied code
+
+      $scope.removeNull = function (itm) {
+        return itm.profiles;
+      };
+
+      $scope.check = function () {
+        var main = document.getElementById("mainchk");
+        var del = [];
+        if (main.checked === true) {
+          for (var i = 0; i < $scope.dash_data.length; i++) {
+            var v = document.getElementById(
+              $scope.dash_data[i].admission_number
+            );
+
+            v.checked = true;
+            $scope.dash_data[i].admission_number1 = true;
+            del.push(
+              $scope.dash_data[i].admission_number,
+              $scope.dash_data[i].section_code,
+              $scope.dash_data[i].fee_category
+            );
+            $scope.row1 = "row_selected";
+            $("tr").addClass("row_selected");
+          }
+        } else {
+          for (var i = 0; i < $scope.dash_data.length; i++) {
+            var t = $scope.dash_data[i].admission_number;
+            var v = document.getElementById(
+              t,
+              $scope.dash_data[i].section_code,
+              $scope.dash_data[i].fee_category
+            );
+            v.checked = false;
+            $scope.dash_data[i].admission_number1 = false;
+            del.pop(t);
+            $scope.row1 = "";
+          }
+        }
+      };
+
+      $scope.getstream = function (grade_code) {
+        if (
+          grade_code == "03" ||
+          grade_code == "04" ||
+          grade_code == "05" ||
+          grade_code == "06" ||
+          grade_code == "07" ||
+          grade_code == "08" ||
+          grade_code == "09" ||
+          grade_code == "10" ||
+          grade_code == "11" ||
+          grade_code == "12"
+        ) {
+          $scope.div_second = true;
+          $scope.div_third = false;
+          $http
+            .get(
+              ENV.apiUrl +
+                "api/common/Admission_dpsd/Get_secondlangDetails?cur_code=" +
+                $scope.edt.curr_code +
+                "&acad_yr=" +
+                $scope.edt.academic_year +
+                "&grade_code=" +
+                $scope.edt.grade_code
+            )
+            .then(function (secondlang_res) {
+              $scope.secondlang_data = secondlang_res.data;
+            });
+        }
+        if (
+          grade_code == "05" ||
+          grade_code == "06" ||
+          grade_code == "07" ||
+          grade_code == "08" ||
+          grade_code == "09" ||
+          grade_code == "10" ||
+          grade_code == "11" ||
+          grade_code == "12"
+        ) {
+          $scope.div_second = true;
+          $scope.div_third = true;
+          $http
+            .get(
+              ENV.apiUrl +
+                "api/common/Admission_dpsd/Get_thirdlangDetails?cur_code=" +
+                $scope.edt.curr_code +
+                "&acad_yr=" +
+                $scope.edt.academic_year +
+                "&grade_code=" +
+                $scope.edt.grade_code
+            )
+            .then(function (thirdlang_res) {
+              $scope.thirdlang_data = thirdlang_res.data;
+            });
+        }
+        if (grade_code == "13" || grade_code == "14") {
+          $scope.div_subject = true;
+          $http
+            .get(ENV.apiUrl + "api/common/Admission_dpsd/GetStreamPrefferd")
+            .then(function (res) {
+              $scope.stream_data = res.data;
+            });
+        }
+      };
+
+      $scope.getSubject = function (stream) {
+        $http
+          .get(
+            ENV.apiUrl +
+              "api/common/Admission_dpsd/GetMandetorySubject?stream=" +
+              stream
+          )
+          .then(function (Mansubject_res) {
+            $scope.Mandetorysubject_data = Mansubject_res.data;
+          });
+
+        $http
+          .get(
+            ENV.apiUrl +
+              "api/common/Admission_dpsd/GetOptionalSubject?stream=" +
+              stream
+          )
+          .then(function (Opsubject_res) {
+            $scope.Optionalsubject_data = Opsubject_res.data;
+          });
+      };
+
+      $scope.GetInfo_new = function (parentid, enrollno) {
+        if (enrollno != null) {
+          $http
+            .post(
+              ENV.apiUrl +
+                "api/common/Admission_dpsd/CheckParentCode?parent_id=" +
+                parentid +
+                "&enroll_no=" +
+                enrollno
+            )
+            .then(function (res) {
+              $scope.msg1 = res.data;
+              $scope.edt.parent_id = $scope.msg1.parent_id;
+              $scope.edt.sibling_enroll =
+                $scope.msg1.sims_student_enroll_number;
+              $scope.edt.sibling_name = $scope.msg1.sibling_name;
+            });
+        }
+      };
+
+      $scope.valandfocus = function (parentid) {
+        if (parentid == undefined || parentid == "") {
+          swal({
+            title: "Alert",
+            text: "Invalid Parent ID",
+            showCloseButton: true,
+            width: 450,
+          });
+          return;
+        }
+        document.getElementById("txt_enroll_no").focus();
+      };
+
+      $scope.primary_contact_change = function () {};
+
+      $scope.valandfocus_mobile = function (mobile) {
+        $http
+          .post(
+            ENV.apiUrl +
+              "api/common/Admission_dpsd/CheckParentCode?parent_id=" +
+              "" +
+              "&enroll_no=" +
+              "" +
+              "&mobile=" +
+              mobile
+          )
+          .then(function (res) {
+            $scope.msg1_mobile = res.data;
+            if (res.data.length > 0) {
+              if (res.data.length > 1) {
+                $scope.view_details_btn = true;
+              } else $scope.view_details_btn = false;
+
+              $scope.msg1 = res.data[0];
+              $scope.edt.parent_id = $scope.msg1.parent_id;
+              $scope.edt.sibling_enroll =
+                $scope.msg1.sims_student_enroll_number;
+              $scope.edt.sibling_name = $scope.msg1.sibling_name;
+
+              $scope.edt.father_salutation_code =
+                $scope.msg1.father_salutation_code;
+
+              $scope.edt.father_first_name = $scope.msg1.father_first_name;
+              $scope.edt.father_middle_name = $scope.msg1.father_middle_name;
+              $scope.edt.father_last_name = $scope.msg1.father_last_name;
+              $scope.edt.father_summary_address =
+                $scope.msg1.father_summary_address;
+              $scope.edt.father_mobile = $scope.msg1.father_mobile;
+              $scope.edt.father_email = $scope.msg1.father_email;
+              $scope.edt.sims_student_enroll_number =
+                $scope.msg1.sims_student_enroll_number;
+              $scope.edt.sims_admission_father_national_id =
+                $scope.msg1.sims_parent_father_national_id;
+              $scope.edt.father_nationality1_code =
+                $scope.msg1.father_nationality1_code;
+
+              $scope.edt.mother_salutation_code =
+                $scope.msg1.mother_salutation_code;
+              $scope.edt.mother_first_name = $scope.msg1.mother_first_name;
+              $scope.edt.mother_middle_name = $scope.msg1.mother_middle_name;
+              $scope.edt.mother_last_name = $scope.msg1.mother_last_name;
+              $scope.edt.mother_summary_address =
+                $scope.msg1.mother_summary_address;
+              $scope.edt.mother_mobile = $scope.msg1.mother_mobile;
+              $scope.edt.mother_email = $scope.msg1.mother_email;
+              $scope.edt.sims_admission_mother_national_id =
+                $scope.msg1.sims_parent_mother_national_id;
+              $scope.edt.mother_nationality1_code =
+                $scope.msg1.mother_nationality1_code;
+
+              $scope.edt.guardian_first_name = $scope.msg1.guardian_first_name;
+              $scope.edt.guardian_middle_name =
+                $scope.msg1.guardian_middle_name;
+              $scope.edt.guardian_last_name = $scope.msg1.guardian_last_name;
+              $scope.edt.guardian_summary_address =
+                $scope.msg1.guardian_summary_address;
+              $scope.edt.guardian_mobile = $scope.msg1.guardian_mobile_no;
+              $scope.edt.guardian_email = $scope.msg1.guardian_email_id;
+
+              $scope.edt.father_salutation_code =
+                $scope.msg1.father_salutation_code;
+              $scope.edt.father_city = $scope.msg1.father_city;
+              $scope.edt.father_state = $scope.msg1.father_state;
+              $scope.edt.father_country = $scope.msg1.father_country;
+              $scope.edt.father_po_box = $scope.msg1.father_po_box;
+              $scope.edt.father_phone = $scope.msg1.father_phone;
+              $scope.edt.father_fax = $scope.msg1.father_fax;
+              $scope.edt.father_appartment_number =
+                $scope.msg1.father_appartment_number;
+              $scope.edt.father_building_number =
+                $scope.msg1.father_building_number;
+              $scope.edt.father_street_number =
+                $scope.msg1.father_street_number;
+              $scope.edt.father_area_number = $scope.msg1.father_area_number;
+
+              $scope.edt.mother_company = $scope.msg1.mother_company;
+              $scope.edt.mother_occupation = $scope.msg1.mother_occupation;
+              $scope.edt.mother_passport_number =
+                $scope.msg1.mother_passport_number;
+              $scope.edt.mother_salutation_code =
+                $scope.msg1.mother_salutation_code;
+              $scope.edt.mother_city = $scope.msg1.mother_city;
+              $scope.edt.mother_state = $scope.msg1.mother_state;
+              $scope.edt.mother_country = $scope.msg1.mother_country;
+              $scope.edt.mother_po_box = $scope.msg1.mother_po_box;
+              $scope.edt.mother_phone = $scope.msg1.mother_phone;
+              $scope.edt.mother_fax = $scope.msg1.mother_fax;
+              $scope.edt.mother_appartment_number =
+                $scope.msg1.mother_appartment_number;
+              $scope.edt.mother_building_number =
+                $scope.msg1.mother_building_number;
+              $scope.edt.mother_street_number =
+                $scope.msg1.mother_street_number;
+              $scope.edt.mother_area_number = $scope.msg1.mother_area_number;
+              $scope.edt.mother_company = $scope.msg1.mother_company;
+              $scope.edt.mother_occupation = $scope.msg1.mother_occupation;
+              $scope.edt.mother_passport_number =
+                $scope.msg1.mother_passport_number;
+            } else {
+              swal({
+                title: "Alert",
+                text: "Invalid Parent Mobile No.",
+                showCloseButton: true,
+                width: 450,
+              });
+            }
+          });
+      };
+
+      $scope.view_details = function () {
+        $("#SiblingListModal").modal({ backdrop: "static", keyboard: true });
+      };
+
+      $scope.sibling_chk = function (str) {
+        for (var i = 0; i < $scope.msg1_mobile.length; i++) {
+          if (i != str) {
+            $scope.msg1_mobile[i].sims_student_enroll_number1 = false;
+          }
+        }
+      };
+
+      $scope.sibling_ok = function (str) {
+        $("#SiblingListModal").modal("hide");
+        for (var i = 0; i < $scope.msg1_mobile.length; i++) {
+          if ($scope.msg1_mobile[i].sims_student_enroll_number1) {
+            $scope.msg1 = $scope.msg1_mobile[i];
+
+            $scope.edt.parent_id = $scope.msg1.parent_id;
+            $scope.edt.sibling_enroll = $scope.msg1.sims_student_enroll_number;
+            $scope.edt.sibling_name = $scope.msg1.sibling_name;
+
+            $scope.edt.father_salutation_code =
+              $scope.msg1.father_salutation_code;
+
+            $scope.edt.father_first_name = $scope.msg1.father_first_name;
+            $scope.edt.father_middle_name = $scope.msg1.father_middle_name;
+            $scope.edt.father_last_name = $scope.msg1.father_last_name;
+            $scope.edt.father_summary_address =
+              $scope.msg1.father_summary_address;
+            $scope.edt.father_mobile = $scope.msg1.father_mobile;
+            $scope.edt.father_email = $scope.msg1.father_email;
+            $scope.edt.sims_student_enroll_number =
+              $scope.msg1.sims_student_enroll_number;
+            $scope.edt.sims_admission_father_national_id =
+              $scope.msg1.sims_parent_father_national_id;
+            $scope.edt.father_nationality1_code =
+              $scope.msg1.father_nationality1_code;
+
+            $scope.edt.mother_salutation_code =
+              $scope.msg1.mother_salutation_code;
+            $scope.edt.mother_first_name = $scope.msg1.mother_first_name;
+            $scope.edt.mother_middle_name = $scope.msg1.mother_middle_name;
+            $scope.edt.mother_last_name = $scope.msg1.mother_last_name;
+            $scope.edt.mother_summary_address =
+              $scope.msg1.mother_summary_address;
+            $scope.edt.mother_mobile = $scope.msg1.mother_mobile;
+            $scope.edt.mother_email = $scope.msg1.mother_email;
+            $scope.edt.sims_admission_mother_national_id =
+              $scope.msg1.sims_parent_mother_national_id;
+            $scope.edt.mother_nationality1_code =
+              $scope.msg1.mother_nationality1_code;
+
+            $scope.edt.guardian_first_name = $scope.msg1.guardian_first_name;
+            $scope.edt.guardian_middle_name = $scope.msg1.guardian_middle_name;
+            $scope.edt.guardian_last_name = $scope.msg1.guardian_last_name;
+            $scope.edt.guardian_summary_address =
+              $scope.msg1.guardian_summary_address;
+            $scope.edt.guardian_mobile = $scope.msg1.guardian_mobile_no;
+            $scope.edt.guardian_email = $scope.msg1.guardian_email_id;
+
+            $scope.edt.father_salutation_code =
+              $scope.msg1.father_salutation_code;
+            $scope.edt.father_city = $scope.msg1.father_city;
+            $scope.edt.father_state = $scope.msg1.father_state;
+            $scope.edt.father_country = $scope.msg1.father_country;
+            $scope.edt.father_po_box = $scope.msg1.father_po_box;
+            $scope.edt.father_phone = $scope.msg1.father_phone;
+            $scope.edt.father_fax = $scope.msg1.father_fax;
+            $scope.edt.father_appartment_number =
+              $scope.msg1.father_appartment_number;
+            $scope.edt.father_building_number =
+              $scope.msg1.father_building_number;
+            $scope.edt.father_street_number = $scope.msg1.father_street_number;
+            $scope.edt.father_area_number = $scope.msg1.father_area_number;
+
+            $scope.edt.mother_company = $scope.msg1.mother_company;
+            $scope.edt.mother_occupation = $scope.msg1.mother_occupation;
+            $scope.edt.mother_passport_number =
+              $scope.msg1.mother_passport_number;
+            $scope.edt.mother_salutation_code =
+              $scope.msg1.mother_salutation_code;
+            $scope.edt.mother_city = $scope.msg1.mother_city;
+            $scope.edt.mother_state = $scope.msg1.mother_state;
+            $scope.edt.mother_country = $scope.msg1.mother_country;
+            $scope.edt.mother_po_box = $scope.msg1.mother_po_box;
+            $scope.edt.mother_phone = $scope.msg1.mother_phone;
+            $scope.edt.mother_fax = $scope.msg1.mother_fax;
+            $scope.edt.mother_appartment_number =
+              $scope.msg1.mother_appartment_number;
+            $scope.edt.mother_building_number =
+              $scope.msg1.mother_building_number;
+            $scope.edt.mother_street_number = $scope.msg1.mother_street_number;
+            $scope.edt.mother_area_number = $scope.msg1.mother_area_number;
+            $scope.edt.mother_company = $scope.msg1.mother_company;
+            $scope.edt.mother_occupation = $scope.msg1.mother_occupation;
+            $scope.edt.mother_passport_number =
+              $scope.msg1.mother_passport_number;
+          }
+        }
+      };
+
+      //save
+      $scope.Save = function (isvalidate) {
+        $scope.save1 = true;
+        var data2 = [];
+        $scope.BUSY = true;
+
+        if (isvalidate) {
+          if ($scope.update1 === false) {
+            var data = {
+              admission_number: $scope.edt.admission_number,
+              appl_num: $scope.edt.appl_num,
+              pros_num: $scope.edt.pros_num,
+              pros_appl_num: $scope.edt.pros_appl_num,
+              admission_date: $scope.edt.admission_date,
+              school_code: $scope.edt.school_code,
+              curr_code: $scope.edt.curr_code,
+              academic_year: $scope.edt.academic_year,
+              grade_code: $scope.edt.grade_code,
+              section_code: $scope.edt.section_code,
+              term_code: $scope.edt.term_code,
+              tent_join_date: $scope.edt.tent_join_date,
+              sims_student_emergency_contact_number1:
+                $scope.edt.sims_student_emergency_contact_number1,
+              sims_student_emergency_contact_name1:
+                $scope.edt.sims_student_emergency_contact_name1,
+              first_name: $scope.edt.first_name,
+              middle_name: $scope.edt.middle_name,
+              last_name: $scope.edt.last_name,
+              family_name: $scope.edt.family_name,
+              first_name_ot: $scope.edt.first_name_ot,
+              midd_name_ot: $scope.edt.midd_name_ot,
+              last_name_ot: $scope.edt.last_name_ot,
+              family_name_ot: $scope.edt.family_name_ot,
+              nicke_name: $scope.edt.nicke_name,
+              birth_date: $scope.edt.birth_date,
+              sims_admission_tag_name: $scope.edt.sims_admission_tag_name,
+              comm_date: $scope.edt.comm_date,
+              birth_country_code: $scope.edt.birth_country_code,
+              nationality_code: $scope.edt.nationality_code,
+              ethinicity_code: $scope.edt.ethinicity_code,
+              gender_code: $scope.edt.gender_code,
+              religion_code: $scope.edt.religion_code,
+              passport_num: $scope.edt.passport_num,
+              passport_issue_date: $scope.edt.passport_issue_date,
+              passport_expiry: $scope.edt.passport_expiry,
+              passport_issue_auth: $scope.edt.passport_issue_auth,
+              passport_issue_place: $scope.edt.passport_issue_place,
+              visa_number: $scope.edt.visa_number,
+              visa_type: $scope.edt.visa_type,
+              visa_issuing_authority: $scope.edt.visa_issuing_authority,
+              visa_issue_date: $scope.edt.visa_issue_date,
+              visa_expiry_date: $scope.edt.visa_expiry_date,
+              visa_issuing_place: $scope.edt.visa_issuing_place,
+              national_id: $scope.edt.national_id,
+              national_id_issue_date: $scope.edt.national_id_issue_date,
+              national_id_expiry_date: $scope.edt.national_id_expiry_date,
+              sibling_status: $scope.edt.sibling_status,
+              parent_id: $scope.edt.parent_id,
+              sibling_enroll: $scope.edt.sibling_enroll,
+              sibling_name: $scope.edt.sibling_name,
+              sibling_dob: $scope.edt.sibling_dob,
+              sibling_school_code: $scope.edt.sibling_school_code,
+              employee_type: $scope.edt.employee_type,
+              employee_code: $scope.edt.employee_code,
+              employee_school_code: $scope.edt.employee_school_code,
+              motherTounge_language_code: $scope.edt.motherTounge_language_code,
+              main_language_code: $scope.edt.main_language_code,
+              main_language_r_code: $scope.edt.main_language_r_code,
+              main_language_w_code: $scope.edt.main_language_w_code,
+              main_language_s_code: $scope.edt.main_language_s_code,
+              primary_contact_code: $scope.edt.primary_contact_code,
+              primary_contact_pref_code: $scope.edt.primary_contact_pref_code,
+              fee_payment_contact_pref_code:
+                $scope.edt.fee_payment_contact_pref_code,
+              transport_status: $scope.edt.transport_status,
+              transport_desc: $scope.edt.transport_desc,
+              father_salutation_code: $scope.edt.father_salutation_code,
+              father_first_name: $scope.edt.father_first_name,
+              father_middle_name: $scope.edt.father_middle_name,
+              father_last_name: $scope.edt.father_last_name,
+              father_family_name: $scope.edt.father_family_name,
+              father_family_name_ot: $scope.edt.father_family_name_ot,
+              father_nationality1_code: $scope.edt.father_nationality1_code,
+              father_nationality2_code: $scope.edt.father_nationality2_code,
+              father_appartment_number: $scope.edt.father_appartment_number,
+              father_building_number: $scope.edt.father_building_number,
+              father_street_number: $scope.edt.father_street_number,
+              father_area_number: $scope.edt.father_area_number,
+              father_city: $scope.edt.father_city,
+              father_state: $scope.edt.father_state,
+              father_country_code: $scope.edt.father_country_code,
+              father_summary_address: $scope.edt.father_summary_address,
+              father_po_box: $scope.edt.father_po_box,
+              father_phone: $scope.edt.father_phone,
+              father_email: $scope.edt.father_email,
+              father_mobile: $scope.edt.father_mobile,
+              father_fax: $scope.edt.father_fax,
+              father_occupation: $scope.edt.father_occupation,
+              father_company: $scope.edt.father_company,
+              father_passport_number: $scope.edt.father_passport_number,
+              sims_admission_father_national_id:
+                $scope.edt.sims_admission_father_national_id,
+              guardian_salutation_code: $scope.edt.guardian_salutation_code,
+              guardian_first_name: $scope.edt.guardian_first_name,
+              guardian_middle_name: $scope.edt.guardian_middle_name,
+              guardian_last_name: $scope.edt.guardian_last_name,
+              guardian_family_name: $scope.edt.guardian_family_name,
+              guardian_nationality1_code: $scope.edt.guardian_nationality1_code,
+              guardian_nationality2_code: $scope.edt.guardian_nationality2_code,
+              guardian_appartment_number: $scope.edt.guardian_appartment_number,
+              guardian_building_number: $scope.edt.guardian_building_number,
+              guardian_street_number: $scope.edt.guardian_street_number,
+              guardian_area_number: $scope.edt.guardian_area_number,
+              guardian_city: $scope.edt.guardian_city,
+              guardian_state: $scope.edt.guardian_state,
+              guardian_country_code: $scope.edt.guardian_country_code,
+              guardian_summary_address: $scope.edt.guardian_summary_address,
+              guardian_po_box: $scope.edt.guardian_po_box,
+              guardian_phone: $scope.edt.guardian_phone,
+              guardian_mobile: $scope.edt.guardian_mobile,
+              guardian_fax: $scope.edt.guardian_fax,
+              guardian_email: $scope.edt.guardian_email,
+              guardian_occupation: $scope.edt.guardian_occupation,
+              guardian_company: $scope.edt.guardian_company,
+              guardian_passport_number: $scope.edt.guardian_passport_number,
+              guardian_relationship_code: $scope.edt.guardian_relationship_code,
+              mother_salutation_code: $scope.edt.mother_salutation_code,
+              mother_first_name: $scope.edt.mother_first_name,
+              mother_middle_name: $scope.edt.mother_middle_name,
+              mother_last_name: $scope.edt.mother_last_name,
+              mother_family_name: $scope.edt.mother_family_name,
+              mother_name_ot: $scope.edt.mother_name_ot,
+              mother_nationality1_code: $scope.edt.mother_nationality1_code,
+              mother_nationality2_code: $scope.edt.mother_nationality2_code,
+              mother_appartment_number: $scope.edt.mother_appartment_number,
+              mother_building_number: $scope.edt.mother_building_number,
+              mother_street_number: $scope.edt.mother_street_number,
+              mother_area_number: $scope.edt.mother_area_number,
+              mother_city: $scope.edt.mother_city,
+              mother_state: $scope.edt.mother_state,
+              mother_country_code: $scope.edt.mother_country_code,
+              mother_summary_address: $scope.edt.mother_summary_address,
+              mother_po_box: $scope.edt.mother_po_box,
+              mother_phone: $scope.edt.mother_phone,
+              mother_mobile: $scope.edt.mother_mobile,
+              mother_fax: $scope.edt.mother_fax,
+              mother_email: $scope.edt.mother_email,
+              mother_occupation: $scope.edt.mother_occupation,
+              mother_passport_number: $scope.edt.mother_passport_number,
+              current_school_status: $scope.edt.current_school_status,
+              current_school_name: $scope.edt.current_school_name,
+              current_school_enroll_number:
+                $scope.edt.current_school_enroll_number,
+              current_school_grade: $scope.edt.current_school_grade,
+              current_school_cur: $scope.edt.current_school_cur,
+              current_school_from_date: $scope.edt.current_school_from_date,
+              current_school_to_date: $scope.edt.current_school_to_date,
+              current_school_language: $scope.edt.current_school_language,
+              current_school_head_teacher:
+                $scope.edt.current_school_head_teacher,
+              current_school_phone: $scope.edt.current_school_phone,
+              current_school_fax: $scope.edt.current_school_fax,
+              current_school_city: $scope.edt.current_school_city,
+              current_school_country_code:
+                $scope.edt.current_school_country_code,
+              current_school_address: $scope.edt.current_school_address,
+              marketing_code: $scope.edt.marketing_code,
+              marketing_description: $scope.edt.marketing_description,
+              parent_status_code: $scope.edt.parent_status_code,
+              legal_custody_code: $scope.edt.legal_custody_code,
+              health_card_number: $scope.edt.health_card_number,
+              health_card_issue_date: $scope.edt.health_card_issue_date,
+              health_card_issuing_authority:
+                $scope.edt.health_card_issuing_authority,
+              blood_group_code: $scope.edt.blood_group_code,
+              medication_status: $scope.edt.medication_status,
+              medication_desc: $scope.edt.medication_desc,
+              disability_status: $scope.edt.disability_status,
+              disability_desc: $scope.edt.disability_desc,
+              behaviour_status: $scope.edt.behaviour_status,
+              behaviour_desc: $scope.edt.behaviour_desc,
+              health_restriction_status: $scope.edt.health_restriction_status,
+              health_restriction_desc: $scope.edt.health_restriction_desc,
+              health_hearing_status: $scope.edt.health_hearing_status,
+              health_hearing_desc: $scope.edt.health_hearing_desc,
+              health_vision_status: $scope.edt.health_vision_status,
+              health_vision_desc: $scope.edt.health_vision_desc,
+              health_other_status: $scope.edt.health_other_status,
+              health_other_desc: $scope.edt.health_other_desc,
+              gifted_status: $scope.edt.gifted_status,
+              gifted_desc: $scope.edt.gifted_desc,
+              music_status: $scope.edt.music_status,
+              music_desc: $scope.edt.music_desc,
+              sports_status: $scope.edt.sports_status,
+              sports_desc: $scope.edt.sports_desc,
+              language_support_status: $scope.edt.language_support_status,
+              language_support_desc: $scope.edt.language_support_desc,
+              declaration_status: $scope.edt.declaration_status,
+              fees_paid_status: $scope.edt.fees_paid_status,
+              fee_category_code: $scope.edt.fee_category_code,
+              ip: $scope.edt.ip,
+              dns: $scope.edt.dns,
+              user_code: $scope.edt.user_code,
+              status: $scope.edt.status,
+              sims_student_attribute1: $scope.edt.sims_student_attribute1,
+              sims_student_attribute2: $scope.edt.sims_student_attribute2,
+              sims_student_attribute3: $scope.edt.sims_student_attribute3,
+              sims_student_attribute4: $scope.edt.sims_student_attribute4,
+              sims_student_health_respiratory_status:
+                $scope.edt.sims_student_health_respiratory_status,
+              sims_student_health_respiratory_desc:
+                $scope.edt.sims_student_health_respiratory_desc,
+              sims_student_health_hay_fever_status:
+                $scope.edt.sims_student_health_hay_fever_status,
+              sims_student_health_hay_fever_desc:
+                $scope.edt.sims_student_health_hay_fever_desc,
+              sims_student_health_epilepsy_status:
+                $scope.edt.sims_student_health_epilepsy_status,
+              sims_student_health_epilepsy_desc:
+                $scope.edt.sims_student_health_epilepsy_desc,
+              sims_student_health_skin_status:
+                $scope.edt.sims_student_health_skin_status,
+              sims_student_health_skin_desc:
+                $scope.edt.sims_student_health_skin_desc,
+              sims_student_health_diabetes_status:
+                $scope.edt.sims_student_health_diabetes_status,
+              sims_student_health_diabetes_desc:
+                $scope.edt.sims_student_health_diabetes_desc,
+              sims_student_health_surgery_status:
+                $scope.edt.sims_student_health_surgery_status,
+              sims_student_health_surgery_desc:
+                $scope.edt.sims_student_health_surgery_desc,
+              sims_admission_recommendation:
+                $scope.edt.sims_admission_recommendation,
+              sims_admission_mother_national_id:
+                $scope.edt.sims_admission_mother_national_id,
+              sims_admission_guardian_national_id:
+                $scope.edt.sims_admission_guardian_national_id,
+              sims_fee_month_code: $scope.edt.sims_fee_month_code,
+              sims_student_attribute5: $scope.edt.sims_student_attribute5,
+              sims_student_attribute6: $scope.edt.sims_student_attribute6,
+              sims_student_attribute7: $scope.edt.sims_student_attribute7,
+              sims_student_attribute8: $scope.edt.sims_student_attribute8,
+              sims_student_attribute9: $scope.edt.sims_student_attribute9,
+              sims_student_attribute10: $scope.edt.sims_student_attribute10,
+              sims_student_attribute11: $scope.edt.sims_student_attribute11,
+              sims_student_attribute12: $scope.edt.sims_student_attribute12,
+
+              home_appartment_number: $scope.edt.home_appartment_number,
+              home_building_number: $scope.edt.home_building_number,
+              home_street_number: $scope.edt.home_street_number,
+              home_area_number: $scope.edt.home_area_number,
+              home_city: $scope.edt.home_city,
+              home_state: $scope.edt.home_state,
+              home_country_code: $scope.edt.home_country_code,
+              home_summary_address: $scope.edt.home_summary_address,
+              home_po_box: $scope.edt.home_po_box,
+              home_landmark: $scope.edt.home_landmark,
+              home_country_isdcode: $scope.edt.home_country_isdcode,
+              home_phone:
+                $scope.edt.home_country_isdcode + "-" + $scope.edt.home_phone,
+              opr: "I",
+            };
+
+            data2.push(data);
+            $http
+              .post(
+                ENV.apiUrl + "api/common/Admission_dpsd/ApproveStudent",
+                data2
+              )
+              .then(function (res) {
+                $scope.display = true;
+                $scope.msg1 = res.data;
+                $scope.BUSY = false;
+                if ($scope.msg1.length > 0) {
+                  var data1 = $scope.msg1;
+                  data1.strMessage =
+                    "Sucessfully Admitted Enroll='" +
+                    data1[0].enroll +
+                    "' \n Student Name='" +
+                    data1[0].stud_full_name +
+                    "'\n Parent Id='" +
+                    data1[0].parent_id;
+
+                  swal({
+                    title: "Alert",
+                    text: data1.strMessage,
+                    showCloseButton: true,
+                    width: 380,
+                  });
+                  $scope.getgrid();
+                }
+              });
+          } else {
+            $scope.Update(isvalidate);
+          }
+        }
+      };
+
+      $scope.getgrid = function () {
+        $scope.edt = [];
+        $scope.myForm.$setPristine();
+        $scope.myForm.$setUntouched();
+        $scope.msg1 = "";
+
+        $('.nav-tabs a[href="#admtab1"]').tab("show");
+      };
+
+      /*start_Date code*/
+
+      function convertdate(dt) {
+        if (dt != null) {
+          var d = dt;
+          return d;
+        }
+      }
+
+      //*start_new*//
+
+      $scope.getchkstrength = function (sectioncode) {
+        if (sectioncode != undefined) {
+          $http
+            .get(
+              ENV.apiUrl +
+                "api/common/Admission_dpsd/getsectionList?cur_code=" +
+                $scope.edt.curr_code +
+                "&acad_yr=" +
+                $scope.edt.academic_year +
+                "&grade_code=" +
+                $scope.edt.grade_code +
+                "&section_code=" +
+                sectioncode
+            )
+            .then(function (res) {
+              $scope.sectionlst1 = res.data;
+            });
+        }
+
+        $("#cmb_section").css("background-color", "#FFF");
+      };
+
+      $scope.view_section_strength = function () {
+        $http
+          .get(
+            ENV.apiUrl +
+              "api/common/Admission_dpsd/getsectionList?cur_code=" +
+              $scope.edt.curr_code +
+              "&acad_yr=" +
+              $scope.edt.academic_year +
+              "&grade_code=" +
+              $scope.edt.grade_code +
+              "&section_code=" +
+              undefined
+          )
+          .then(function (res) {
+            $scope.sectionlst = res.data;
+            $scope.section = true;
+            $("#SectionListModal").modal({
+              backdrop: "static",
+              keyboard: true,
+            });
+
+            for (var i = 0; i < $scope.sectionlst.length; i++) {
+              if (
+                $scope.sectionlst[i].section_code == $scope.edt.section_code
+              ) {
+                setTimeout(function () {
+                  $("#" + i).addClass("row_selected");
+                }, 100);
+                break;
+              }
+            }
+          });
+      };
+
+      //*end_new*//
+
+      //save for later
+
+      $scope.saveForLater = function () {
+        var data2 = [];
+        {
+          var data = {
+            admission_number: $scope.edt.admission_number,
+            appl_num: $scope.edt.appl_num,
+            pros_num: $scope.edt.pros_num,
+            pros_appl_num: $scope.edt.pros_appl_num,
+            admission_date: $scope.edt.admission_date,
+            school_code: $scope.edt.school_code,
+            curr_code: $scope.edt.curr_code,
+            academic_year: $scope.edt.academic_year,
+            grade_code: $scope.edt.grade_code,
+            section_code: $scope.edt.section_code,
+            term_code: $scope.edt.term_code,
+            tent_join_date: $scope.edt.tent_join_date,
+            sims_student_emergency_contact_number1:
+              $scope.edt.sims_student_emergency_contact_number1,
+            sims_student_emergency_contact_name1:
+              $scope.edt.sims_student_emergency_contact_name1,
+            first_name: $scope.edt.first_name,
+            middle_name: $scope.edt.middle_name,
+            last_name: $scope.edt.last_name,
+            family_name: $scope.edt.family_name,
+            first_name_ot: $scope.edt.first_name_ot,
+            midd_name_ot: $scope.edt.midd_name_ot,
+            last_name_ot: $scope.edt.last_name_ot,
+            family_name_ot: $scope.edt.family_name_ot,
+            nicke_name: $scope.edt.nicke_name,
+            birth_date: $scope.edt.birth_date,
+            sims_admission_tag_name: $scope.edt.sims_admission_tag_name,
+            comm_date: $scope.edt.comm_date,
+            birth_country_code: $scope.edt.birth_country_code,
+            nationality_code: $scope.edt.nationality_code,
+            ethinicity_code: $scope.edt.ethinicity_code,
+            gender_code: $scope.edt.gender_code,
+            religion_code: $scope.edt.religion_code,
+            passport_num: $scope.edt.passport_num,
+            passport_issue_date: $scope.edt.passport_issue_date,
+            passport_expiry: $scope.edt.passport_expiry,
+            passport_issue_auth: $scope.edt.passport_issue_auth,
+            passport_issue_place: $scope.edt.passport_issue_place,
+            visa_number: $scope.edt.visa_number,
+            visa_type: $scope.edt.visa_type,
+            visa_issuing_authority: $scope.edt.visa_issuing_authority,
+            visa_issue_date: $scope.edt.visa_issue_date,
+            visa_expiry_date: $scope.edt.visa_expiry_date,
+            visa_issuing_place: $scope.edt.visa_issuing_place,
+            national_id: $scope.edt.national_id,
+            national_id_issue_date: $scope.edt.national_id_issue_date,
+            national_id_expiry_date: $scope.edt.national_id_expiry_date,
+            sibling_status: $scope.edt.sibling_status,
+            parent_id: $scope.edt.parent_id,
+            sibling_enroll: $scope.edt.sibling_enroll,
+            sibling_name: $scope.edt.sibling_name,
+            sibling_dob: $scope.edt.sibling_dob,
+            sibling_school_code: $scope.edt.sibling_school_code,
+            employee_type: $scope.edt.employee_type,
+            employee_code: $scope.edt.employee_code,
+            employee_school_code: $scope.edt.employee_school_code,
+            motherTounge_language_code: $scope.edt.motherTounge_language_code,
+            main_language_code: $scope.edt.main_language_code,
+            main_language_r_code: $scope.edt.main_language_r_code,
+            main_language_w_code: $scope.edt.main_language_w_code,
+            main_language_s_code: $scope.edt.main_language_s_code,
+            primary_contact_code: $scope.edt.primary_contact_code,
+            primary_contact_pref_code: $scope.edt.primary_contact_pref_code,
+            fee_payment_contact_pref_code:
+              $scope.edt.fee_payment_contact_pref_code,
+            transport_status: $scope.edt.transport_status,
+            transport_desc: $scope.edt.transport_desc,
+            father_salutation_code: $scope.edt.father_salutation_code,
+            father_first_name: $scope.edt.father_first_name,
+            father_middle_name: $scope.edt.father_middle_name,
+            father_last_name: $scope.edt.father_last_name,
+            father_family_name: $scope.edt.father_family_name,
+            father_family_name_ot: $scope.edt.father_family_name_ot,
+            father_nationality1_code: $scope.edt.father_nationality1_code,
+            father_nationality2_code: $scope.edt.father_nationality2_code,
+            father_appartment_number: $scope.edt.father_appartment_number,
+            father_building_number: $scope.edt.father_building_number,
+            father_street_number: $scope.edt.father_street_number,
+            father_area_number: $scope.edt.father_area_number,
+            father_city: $scope.edt.father_city,
+            father_state: $scope.edt.father_state,
+            father_country_code: $scope.edt.father_country_code,
+            father_summary_address: $scope.edt.father_summary_address,
+            father_po_box: $scope.edt.father_po_box,
+            father_phone: $scope.edt.father_phone,
+            father_email: $scope.edt.father_email,
+            father_mobile: $scope.edt.father_mobile,
+            father_fax: $scope.edt.father_fax,
+            father_occupation: $scope.edt.father_occupation,
+            father_company: $scope.edt.father_company,
+            father_passport_number: $scope.edt.father_passport_number,
+            sims_admission_father_national_id:
+              $scope.edt.sims_admission_father_national_id,
+            guardian_salutation_code: $scope.edt.guardian_salutation_code,
+            guardian_first_name: $scope.edt.guardian_first_name,
+            guardian_middle_name: $scope.edt.guardian_middle_name,
+            guardian_last_name: $scope.edt.guardian_last_name,
+            guardian_family_name: $scope.edt.guardian_family_name,
+            guardian_nationality1_code: $scope.edt.guardian_nationality1_code,
+            guardian_nationality2_code: $scope.edt.guardian_nationality2_code,
+            guardian_appartment_number: $scope.edt.guardian_appartment_number,
+            guardian_building_number: $scope.edt.guardian_building_number,
+            guardian_street_number: $scope.edt.guardian_street_number,
+            guardian_area_number: $scope.edt.guardian_area_number,
+            guardian_city: $scope.edt.guardian_city,
+            guardian_state: $scope.edt.guardian_state,
+            guardian_country_code: $scope.edt.guardian_country_code,
+            guardian_summary_address: $scope.edt.guardian_summary_address,
+            guardian_po_box: $scope.edt.guardian_po_box,
+            guardian_phone: $scope.edt.guardian_phone,
+            guardian_mobile: $scope.edt.guardian_mobile,
+            guardian_fax: $scope.edt.guardian_fax,
+            guardian_email: $scope.edt.guardian_email,
+            guardian_occupation: $scope.edt.guardian_occupation,
+            guardian_company: $scope.edt.guardian_company,
+            guardian_passport_number: $scope.edt.guardian_passport_number,
+            guardian_relationship_code: $scope.edt.guardian_relationship_code,
+            mother_salutation_code: $scope.edt.mother_salutation_code,
+            mother_first_name: $scope.edt.mother_first_name,
+            mother_middle_name: $scope.edt.mother_middle_name,
+            mother_last_name: $scope.edt.mother_last_name,
+            mother_family_name: $scope.edt.mother_family_name,
+            mother_name_ot: $scope.edt.mother_name_ot,
+            mother_nationality1_code: $scope.edt.mother_nationality1_code,
+            mother_nationality2_code: $scope.edt.mother_nationality2_code,
+            mother_appartment_number: $scope.edt.mother_appartment_number,
+            mother_building_number: $scope.edt.mother_building_number,
+            mother_street_number: $scope.edt.mother_street_number,
+            mother_area_number: $scope.edt.mother_area_number,
+            mother_city: $scope.edt.mother_city,
+            mother_state: $scope.edt.mother_state,
+            mother_country_code: $scope.edt.mother_country_code,
+            mother_summary_address: $scope.edt.mother_summary_address,
+            mother_po_box: $scope.edt.mother_po_box,
+            mother_phone: $scope.edt.mother_phone,
+            mother_mobile: $scope.edt.mother_mobile,
+            mother_fax: $scope.edt.mother_fax,
+            mother_email: $scope.edt.mother_email,
+            mother_occupation: $scope.edt.mother_occupation,
+            mother_passport_number: $scope.edt.mother_passport_number,
+            current_school_status: $scope.edt.current_school_status,
+            current_school_name: $scope.edt.current_school_name,
+            current_school_enroll_number:
+              $scope.edt.current_school_enroll_number,
+            current_school_grade: $scope.edt.current_school_grade,
+            current_school_cur: $scope.edt.current_school_cur,
+            current_school_from_date: $scope.edt.current_school_from_date,
+            current_school_to_date: $scope.edt.current_school_to_date,
+            current_school_language: $scope.edt.current_school_language,
+            current_school_head_teacher: $scope.edt.current_school_head_teacher,
+            current_school_phone: $scope.edt.current_school_phone,
+            current_school_fax: $scope.edt.current_school_fax,
+            current_school_city: $scope.edt.current_school_city,
+            current_school_country_code: $scope.edt.current_school_country_code,
+            current_school_address: $scope.edt.current_school_address,
+            marketing_code: $scope.edt.marketing_code,
+            marketing_description: $scope.edt.marketing_description,
+            parent_status_code: $scope.edt.parent_status_code,
+            legal_custody_code: $scope.edt.legal_custody_code,
+            health_card_number: $scope.edt.health_card_number,
+            health_card_issue_date: $scope.edt.health_card_issue_date,
+            health_card_issuing_authority:
+              $scope.edt.health_card_issuing_authority,
+            blood_group_code: $scope.edt.blood_group_code,
+            medication_status: $scope.edt.medication_status,
+            medication_desc: $scope.edt.medication_desc,
+            disability_status: $scope.edt.disability_status,
+            disability_desc: $scope.edt.disability_desc,
+            behaviour_status: $scope.edt.behaviour_status,
+            behaviour_desc: $scope.edt.behaviour_desc,
+            health_restriction_status: $scope.edt.health_restriction_status,
+            health_restriction_desc: $scope.edt.health_restriction_desc,
+            health_hearing_status: $scope.edt.health_hearing_status,
+            health_hearing_desc: $scope.edt.health_hearing_desc,
+            health_vision_status: $scope.edt.health_vision_status,
+            health_vision_desc: $scope.edt.health_vision_desc,
+            health_other_status: $scope.edt.health_other_status,
+            health_other_desc: $scope.edt.health_other_desc,
+            gifted_status: $scope.edt.gifted_status,
+            gifted_desc: $scope.edt.gifted_desc,
+            music_status: $scope.edt.music_status,
+            music_desc: $scope.edt.music_desc,
+            sports_status: $scope.edt.sports_status,
+            sports_desc: $scope.edt.sports_desc,
+            language_support_status: $scope.edt.language_support_status,
+            language_support_desc: $scope.edt.language_support_desc,
+            declaration_status: $scope.edt.declaration_status,
+            fees_paid_status: $scope.edt.fees_paid_status,
+            fee_category_code: $scope.edt.fee_category_code,
+            ip: $scope.edt.ip,
+            dns: $scope.edt.dns,
+            user_code: $scope.edt.user_code,
+            status: $scope.edt.status,
+            sims_student_attribute1: $scope.edt.sims_student_attribute1,
+            sims_student_attribute2: $scope.edt.sims_student_attribute2,
+            sims_student_attribute3: $scope.edt.sims_student_attribute3,
+            sims_student_attribute4: $scope.edt.sims_student_attribute4,
+            sims_student_health_respiratory_status:
+              $scope.edt.sims_student_health_respiratory_status,
+            sims_student_health_respiratory_desc:
+              $scope.edt.sims_student_health_respiratory_desc,
+            sims_student_health_hay_fever_status:
+              $scope.edt.sims_student_health_hay_fever_status,
+            sims_student_health_hay_fever_desc:
+              $scope.edt.sims_student_health_hay_fever_desc,
+            sims_student_health_epilepsy_status:
+              $scope.edt.sims_student_health_epilepsy_status,
+            sims_student_health_epilepsy_desc:
+              $scope.edt.sims_student_health_epilepsy_desc,
+            sims_student_health_skin_status:
+              $scope.edt.sims_student_health_skin_status,
+            sims_student_health_skin_desc:
+              $scope.edt.sims_student_health_skin_desc,
+            sims_student_health_diabetes_status:
+              $scope.edt.sims_student_health_diabetes_status,
+            sims_student_health_diabetes_desc:
+              $scope.edt.sims_student_health_diabetes_desc,
+            sims_student_health_surgery_status:
+              $scope.edt.sims_student_health_surgery_status,
+            sims_student_health_surgery_desc:
+              $scope.edt.sims_student_health_surgery_desc,
+            sims_admission_recommendation:
+              $scope.edt.sims_admission_recommendation,
+            sims_admission_mother_national_id:
+              $scope.edt.sims_admission_mother_national_id,
+            sims_admission_guardian_national_id:
+              $scope.edt.sims_admission_guardian_national_id,
+            sims_fee_month_code: $scope.edt.sims_fee_month_code,
+            sims_student_attribute5: $scope.edt.sims_student_attribute5,
+            sims_student_attribute6: $scope.edt.sims_student_attribute6,
+            sims_student_attribute7: $scope.edt.sims_student_attribute7,
+            sims_student_attribute8: $scope.edt.sims_student_attribute8,
+            sims_student_attribute9: $scope.edt.sims_student_attribute9,
+            sims_student_attribute10: $scope.edt.sims_student_attribute10,
+            sims_student_attribute11: $scope.edt.sims_student_attribute11,
+            sims_student_attribute12: $scope.edt.sims_student_attribute12,
+            sims_admission_specialAct_status:
+              $scope.edt.sims_admission_specialAct_status,
+            sims_admission_specialAct_desc:
+              $scope.edt.sims_admission_specialAct_desc,
+            sims_admission_communication_status:
+              $scope.edt.sims_admission_communication_status,
+            sims_admission_communication_desc:
+              $scope.edt.sims_admission_communication_desc,
+            sims_admission_falled_grade_status:
+              $scope.edt.sims_admission_falled_grade_status,
+            sims_admission_falled_grade_desc:
+              $scope.edt.sims_admission_falled_grade_desc,
+            sims_admission_learning_therapy_status:
+              $scope.edt.sims_admission_learning_therapy_status,
+            sims_admission_learning_therapy_desc:
+              $scope.edt.sims_admission_learning_therapy_desc,
+            sims_admission_special_education_status:
+              $scope.edt.sims_admission_special_education_status,
+            sims_admission_special_education_desc:
+              $scope.edt.sims_admission_special_education_desc,
+            sims_admission_second_lang_code:
+              $scope.edt.sims_admission_second_lang_code,
+            sims_admission_third_lang_code:
+              $scope.edt.sims_admission_third_lang_code,
+            sims_admission_subject_code:
+              $scope.edt.sims_admission_second_lang_code +
+              "," +
+              $scope.edt.sims_admission_third_lang_code,
+            opr: "U",
+          };
+
+          data2.push(data);
+
+          $http
+            .post(
+              ENV.apiUrl + "api/common/Admission_dpsd/CUDUpdateAdmission",
+              data2
+            )
+            .then(function (res) {
+              $scope.display = true;
+              $scope.msg1 = res.data;
+              if ($scope.msg1.status === true) {
+                swal({
+                  title: "Alert",
+                  text: $scope.msg1.strMessage,
+                  showCloseButton: true,
+                  width: 380,
+                }).then(function (isConfirm) {
+                  if (isConfirm) {
+                  }
+                });
+              }
+            });
+        }
+      };
+
+      $scope.Update = function (isvalidate) {
+        var data2 = [];
+        if (isvalidate) {
+          var data = {
+            admission_number: $scope.edt.admission_number,
+            appl_num: $scope.edt.appl_num,
+            pros_num: $scope.edt.pros_num,
+            pros_appl_num: $scope.edt.pros_appl_num,
+            admission_date: $scope.edt.admission_date,
+            school_code: $scope.edt.school_code,
+            curr_code: $scope.edt.curr_code,
+            academic_year: $scope.edt.academic_year,
+            grade_code: $scope.edt.grade_code,
+            section_code: $scope.edt.section_code,
+            term_code: $scope.edt.term_code,
+            tent_join_date: $scope.edt.tent_join_date,
+            sims_student_emergency_contact_number1:
+              $scope.edt.sims_student_emergency_contact_number1,
+            sims_student_emergency_contact_name1:
+              $scope.edt.sims_student_emergency_contact_name1,
+            first_name: $scope.edt.first_name,
+            middle_name: $scope.edt.middle_name,
+            last_name: $scope.edt.last_name,
+            family_name: $scope.edt.family_name,
+            first_name_ot: $scope.edt.first_name_ot,
+            midd_name_ot: $scope.edt.midd_name_ot,
+            last_name_ot: $scope.edt.last_name_ot,
+            family_name_ot: $scope.edt.family_name_ot,
+            nicke_name: $scope.edt.nicke_name,
+            birth_date: $scope.edt.birth_date,
+            sims_admission_tag_name: $scope.edt.sims_admission_tag_name,
+            comm_date: $scope.edt.comm_date,
+            birth_country_code: $scope.edt.birth_country_code,
+            nationality_code: $scope.edt.nationality_code,
+            ethinicity_code: $scope.edt.ethinicity_code,
+            gender_code: $scope.edt.gender_code,
+            religion_code: $scope.edt.religion_code,
+            passport_num: $scope.edt.passport_num,
+            passport_issue_date: $scope.edt.passport_issue_date,
+            passport_expiry: $scope.edt.passport_expiry,
+            passport_issue_auth: $scope.edt.passport_issue_auth,
+            passport_issue_place: $scope.edt.passport_issue_place,
+            visa_number: $scope.edt.visa_number,
+            visa_type: $scope.edt.visa_type,
+            visa_issuing_authority: $scope.edt.visa_issuing_authority,
+            visa_issue_date: $scope.edt.visa_issue_date,
+            visa_expiry_date: $scope.edt.visa_expiry_date,
+            visa_issuing_place: $scope.edt.visa_issuing_place,
+            national_id: $scope.edt.national_id,
+            national_id_issue_date: $scope.edt.national_id_issue_date,
+            national_id_expiry_date: $scope.edt.national_id_expiry_date,
+            sibling_status: $scope.edt.sibling_status,
+            parent_id: $scope.edt.parent_id,
+            sibling_enroll: $scope.edt.sibling_enroll,
+            sibling_name: $scope.edt.sibling_name,
+            sibling_dob: $scope.edt.sibling_dob,
+            sibling_school_code: $scope.edt.sibling_school_code,
+            employee_type: $scope.edt.employee_type,
+            employee_code: $scope.edt.employee_code,
+            employee_school_code: $scope.edt.employee_school_code,
+            motherTounge_language_code: $scope.edt.motherTounge_language_code,
+            main_language_code: $scope.edt.main_language_code,
+            main_language_r_code: $scope.edt.main_language_r_code,
+            main_language_w_code: $scope.edt.main_language_w_code,
+            main_language_s_code: $scope.edt.main_language_s_code,
+            primary_contact_code: $scope.edt.primary_contact_code,
+            primary_contact_pref_code: $scope.edt.primary_contact_pref_code,
+            fee_payment_contact_pref_code:
+              $scope.edt.fee_payment_contact_pref_code,
+            transport_status: $scope.edt.transport_status,
+            transport_desc: $scope.edt.transport_desc,
+            father_salutation_code: $scope.edt.father_salutation_code,
+            father_first_name: $scope.edt.father_first_name,
+            father_middle_name: $scope.edt.father_middle_name,
+            father_last_name: $scope.edt.father_last_name,
+            father_family_name: $scope.edt.father_family_name,
+            father_family_name_ot: $scope.edt.father_family_name_ot,
+            father_nationality1_code: $scope.edt.father_nationality1_code,
+            father_nationality2_code: $scope.edt.father_nationality2_code,
+            father_appartment_number: $scope.edt.father_appartment_number,
+            father_building_number: $scope.edt.father_building_number,
+            father_street_number: $scope.edt.father_street_number,
+            father_area_number: $scope.edt.father_area_number,
+            father_city: $scope.edt.father_city,
+            father_state: $scope.edt.father_state,
+            father_country_code: $scope.edt.father_country_code,
+            father_summary_address: $scope.edt.father_summary_address,
+            father_po_box: $scope.edt.father_po_box,
+            father_phone: $scope.edt.father_phone,
+            father_email: $scope.edt.father_email,
+            father_mobile: $scope.edt.father_mobile,
+            father_fax: $scope.edt.father_fax,
+            father_occupation: $scope.edt.father_occupation,
+            father_company: $scope.edt.father_company,
+            father_passport_number: $scope.edt.father_passport_number,
+            sims_admission_father_national_id:
+              $scope.edt.sims_admission_father_national_id,
+            guardian_salutation_code: $scope.edt.guardian_salutation_code,
+            guardian_first_name: $scope.edt.guardian_first_name,
+            guardian_middle_name: $scope.edt.guardian_middle_name,
+            guardian_last_name: $scope.edt.guardian_last_name,
+            guardian_family_name: $scope.edt.guardian_family_name,
+            guardian_nationality1_code: $scope.edt.guardian_nationality1_code,
+            guardian_nationality2_code: $scope.edt.guardian_nationality2_code,
+            guardian_appartment_number: $scope.edt.guardian_appartment_number,
+            guardian_building_number: $scope.edt.guardian_building_number,
+            guardian_street_number: $scope.edt.guardian_street_number,
+            guardian_area_number: $scope.edt.guardian_area_number,
+            guardian_city: $scope.edt.guardian_city,
+            guardian_state: $scope.edt.guardian_state,
+            guardian_country_code: $scope.edt.guardian_country_code,
+            guardian_summary_address: $scope.edt.guardian_summary_address,
+            guardian_po_box: $scope.edt.guardian_po_box,
+            guardian_phone: $scope.edt.guardian_phone,
+            guardian_mobile: $scope.edt.guardian_mobile,
+            guardian_fax: $scope.edt.guardian_fax,
+            guardian_email: $scope.edt.guardian_email,
+            guardian_occupation: $scope.edt.guardian_occupation,
+            guardian_company: $scope.edt.guardian_company,
+            guardian_passport_number: $scope.edt.guardian_passport_number,
+            guardian_relationship_code: $scope.edt.guardian_relationship_code,
+            mother_salutation_code: $scope.edt.mother_salutation_code,
+            mother_first_name: $scope.edt.mother_first_name,
+            mother_middle_name: $scope.edt.mother_middle_name,
+            mother_last_name: $scope.edt.mother_last_name,
+            mother_family_name: $scope.edt.mother_family_name,
+            mother_name_ot: $scope.edt.mother_name_ot,
+            mother_nationality1_code: $scope.edt.mother_nationality1_code,
+            mother_nationality2_code: $scope.edt.mother_nationality2_code,
+            mother_appartment_number: $scope.edt.mother_appartment_number,
+            mother_building_number: $scope.edt.mother_building_number,
+            mother_street_number: $scope.edt.mother_street_number,
+            mother_area_number: $scope.edt.mother_area_number,
+            mother_city: $scope.edt.mother_city,
+            mother_state: $scope.edt.mother_state,
+            mother_country_code: $scope.edt.mother_country_code,
+            mother_summary_address: $scope.edt.mother_summary_address,
+            mother_po_box: $scope.edt.mother_po_box,
+            mother_phone: $scope.edt.mother_phone,
+            mother_mobile: $scope.edt.mother_mobile,
+            mother_fax: $scope.edt.mother_fax,
+            mother_email: $scope.edt.mother_email,
+            mother_occupation: $scope.edt.mother_occupation,
+            mother_passport_number: $scope.edt.mother_passport_number,
+            current_school_status: $scope.edt.current_school_status,
+            current_school_name: $scope.edt.current_school_name,
+            current_school_enroll_number:
+              $scope.edt.current_school_enroll_number,
+            current_school_grade: $scope.edt.current_school_grade,
+            current_school_cur: $scope.edt.current_school_cur,
+            current_school_from_date: $scope.edt.current_school_from_date,
+            current_school_to_date: $scope.edt.current_school_to_date,
+            current_school_language: $scope.edt.current_school_language,
+            current_school_head_teacher: $scope.edt.current_school_head_teacher,
+            current_school_phone: $scope.edt.current_school_phone,
+            current_school_fax: $scope.edt.current_school_fax,
+            current_school_city: $scope.edt.current_school_city,
+            current_school_country_code: $scope.edt.current_school_country_code,
+            current_school_address: $scope.edt.current_school_address,
+            marketing_code: $scope.edt.marketing_code,
+            marketing_description: $scope.edt.marketing_description,
+            parent_status_code: $scope.edt.parent_status_code,
+            legal_custody_code: $scope.edt.legal_custody_code,
+            health_card_number: $scope.edt.health_card_number,
+            health_card_issue_date: $scope.edt.health_card_issue_date,
+            health_card_issuing_authority:
+              $scope.edt.health_card_issuing_authority,
+            blood_group_code: $scope.edt.blood_group_code,
+            medication_status: $scope.edt.medication_status,
+            medication_desc: $scope.edt.medication_desc,
+            disability_status: $scope.edt.disability_status,
+            disability_desc: $scope.edt.disability_desc,
+            behaviour_status: $scope.edt.behaviour_status,
+            behaviour_desc: $scope.edt.behaviour_desc,
+            health_restriction_status: $scope.edt.health_restriction_status,
+            health_restriction_desc: $scope.edt.health_restriction_desc,
+            health_hearing_status: $scope.edt.health_hearing_status,
+            health_hearing_desc: $scope.edt.health_hearing_desc,
+            health_vision_status: $scope.edt.health_vision_status,
+            health_vision_desc: $scope.edt.health_vision_desc,
+            health_other_status: $scope.edt.health_other_status,
+            health_other_desc: $scope.edt.health_other_desc,
+            gifted_status: $scope.edt.gifted_status,
+            gifted_desc: $scope.edt.gifted_desc,
+            music_status: $scope.edt.music_status,
+            music_desc: $scope.edt.music_desc,
+            sports_status: $scope.edt.sports_status,
+            sports_desc: $scope.edt.sports_desc,
+            language_support_status: $scope.edt.language_support_status,
+            language_support_desc: $scope.edt.language_support_desc,
+            declaration_status: $scope.edt.declaration_status,
+            fees_paid_status: $scope.edt.fees_paid_status,
+            fee_category_code: $scope.edt.fee_category_code,
+            ip: $scope.edt.ip,
+            dns: $scope.edt.dns,
+            user_code: $scope.edt.user_code,
+            status: $scope.edt.status,
+            sims_student_attribute1: $scope.edt.sims_student_attribute1,
+            sims_student_attribute2: $scope.edt.sims_student_attribute2,
+            sims_student_attribute3: $scope.edt.sims_student_attribute3,
+            sims_student_attribute4: $scope.edt.sims_student_attribute4,
+            sims_student_health_respiratory_status:
+              $scope.edt.sims_student_health_respiratory_status,
+            sims_student_health_respiratory_desc:
+              $scope.edt.sims_student_health_respiratory_desc,
+            sims_student_health_hay_fever_status:
+              $scope.edt.sims_student_health_hay_fever_status,
+            sims_student_health_hay_fever_desc:
+              $scope.edt.sims_student_health_hay_fever_desc,
+            sims_student_health_epilepsy_status:
+              $scope.edt.sims_student_health_epilepsy_status,
+            sims_student_health_epilepsy_desc:
+              $scope.edt.sims_student_health_epilepsy_desc,
+            sims_student_health_skin_status:
+              $scope.edt.sims_student_health_skin_status,
+            sims_student_health_skin_desc:
+              $scope.edt.sims_student_health_skin_desc,
+            sims_student_health_diabetes_status:
+              $scope.edt.sims_student_health_diabetes_status,
+            sims_student_health_diabetes_desc:
+              $scope.edt.sims_student_health_diabetes_desc,
+            sims_student_health_surgery_status:
+              $scope.edt.sims_student_health_surgery_status,
+            sims_student_health_surgery_desc:
+              $scope.edt.sims_student_health_surgery_desc,
+            sims_admission_recommendation:
+              $scope.edt.sims_admission_recommendation,
+            sims_admission_mother_national_id:
+              $scope.edt.sims_admission_mother_national_id,
+            sims_admission_guardian_national_id:
+              $scope.edt.sims_admission_guardian_national_id,
+            sims_fee_month_code: $scope.edt.sims_fee_month_code,
+            sims_student_attribute5: $scope.edt.sims_student_attribute5,
+            sims_student_attribute6: $scope.edt.sims_student_attribute6,
+            sims_student_attribute7: $scope.edt.sims_student_attribute7,
+            sims_student_attribute8: $scope.edt.sims_student_attribute8,
+            sims_student_attribute9: $scope.edt.sims_student_attribute9,
+            sims_student_attribute10: $scope.edt.sims_student_attribute10,
+            sims_student_attribute11: $scope.edt.sims_student_attribute11,
+            sims_student_attribute12: $scope.edt.sims_student_attribute12,
+            sims_admission_specialAct_status:
+              $scope.edt.sims_admission_specialAct_status,
+            sims_admission_specialAct_desc:
+              $scope.edt.sims_admission_specialAct_desc,
+            sims_admission_communication_status:
+              $scope.edt.sims_admission_communication_status,
+            sims_admission_communication_desc:
+              $scope.edt.sims_admission_communication_desc,
+            sims_admission_falled_grade_status:
+              $scope.edt.sims_admission_falled_grade_status,
+            sims_admission_falled_grade_desc:
+              $scope.edt.sims_admission_falled_grade_desc,
+            sims_admission_learning_therapy_status:
+              $scope.edt.sims_admission_learning_therapy_status,
+            sims_admission_learning_therapy_desc:
+              $scope.edt.sims_admission_learning_therapy_desc,
+            sims_admission_special_education_status:
+              $scope.edt.sims_admission_special_education_status,
+            sims_admission_special_education_desc:
+              $scope.edt.sims_admission_special_education_desc,
+            sims_admission_second_lang_code:
+              $scope.edt.sims_admission_second_lang_code,
+            sims_admission_third_lang_code:
+              $scope.edt.sims_admission_third_lang_code,
+            sims_admission_subject_code:
+              $scope.edt.sims_admission_second_lang_code +
+              "," +
+              $scope.edt.sims_admission_third_lang_code,
+            sims_admission_completed_status: "Y",
+            opr: "U",
+          };
+
+          data2.push(data);
+
+          $http
+            .post(
+              ENV.apiUrl + "api/common/Admission_dpsd/CUDUpdateAdmissionSiso",
+              data2
+            )
+            .then(function (res) {
+              $scope.display = true;
+              $scope.msg1 = res.data;
+              if ($scope.msg1.status === true) {
+                swal({
+                  title: "Alert",
+                  text: $scope.msg1.strMessage,
+                  showCloseButton: true,
+                  width: 380,
+                }).then(function (isConfirm) {
+                  if (isConfirm) {
+                    $scope.modal_cancel();
+                  }
+                });
+              }
+            });
+        }
+      };
+
+      $scope.Confirm = function (isvalidate) {
+        var data2 = [];
+        if (isvalidate) {
+          if (
+            $scope.sectionlst1.current_strength >
+            $scope.sectionlst1.section_strength
+          ) {
+            swal({
+              title: "Alert",
+              text: "Section Strength is Full.If You still want to Continue?",
+              showCloseButton: true,
+              width: 380,
+            }).then(function (isConfirm) {
+              if (isConfirm) {
+                $scope.adm_update();
+              } else {
+                $("#cmb_section").css("background-color", "#E5E9EC");
+                $('.nav-tabs a[href="#admtab1"]').tab("show");
+              }
+            });
+          } else {
+            $scope.adm_update();
+          }
+        }
+      };
+
+      $scope.adm_update = function () {
+        if ($scope.edt.home_country_isdcode == null)
+          $scope.edt.home_country_isdcode = "";
+        if ($scope.edt.home_phone == null) $scope.edt.home_phone = "";
+
+        var data = {
+          admission_number: param,
+          appl_num: $scope.edt.appl_num,
+          pros_num: $scope.edt.pros_num,
+          pros_appl_num: $scope.edt.pros_appl_num,
+          admission_date: $scope.edt.admission_date,
+          school_code: $scope.edt.school_code,
+          curr_code: $scope.edt.curr_code,
+          academic_year: $scope.edt.academic_year,
+          grade_code: $scope.edt.grade_code,
+          section_code: $scope.edt.section_code,
+          term_code: $scope.edt.term_code,
+          tent_join_date: $scope.edt.tent_join_date,
+          sims_student_emergency_contact_number1:
+            $scope.edt.sims_student_emergency_contact_number1,
+          sims_student_emergency_contact_name1:
+            $scope.edt.sims_student_emergency_contact_name1,
+          first_name: $scope.edt.first_name,
+          middle_name: $scope.edt.middle_name,
+          last_name: $scope.edt.last_name,
+          family_name: $scope.edt.family_name,
+          first_name_ot: $scope.edt.first_name_ot,
+          midd_name_ot: $scope.edt.midd_name_ot,
+          last_name_ot: $scope.edt.last_name_ot,
+          family_name_ot: $scope.edt.family_name_ot,
+          nicke_name: $scope.edt.nicke_name,
+          birth_date: $scope.edt.birth_date,
+          sims_admission_tag_name: $scope.edt.sims_admission_tag_name,
+          comm_date: $scope.edt.comm_date,
+          birth_country_code: $scope.edt.birth_country_code,
+          nationality_code: $scope.edt.nationality_code,
+          ethinicity_code: $scope.edt.ethinicity_code,
+          gender_code: $scope.edt.gender_code,
+          religion_code: $scope.edt.religion_code,
+          passport_num: $scope.edt.passport_num,
+          passport_issue_date: $scope.edt.passport_issue_date,
+          passport_expiry: $scope.edt.passport_expiry,
+          passport_issue_auth: $scope.edt.passport_issue_auth,
+          passport_issue_place: $scope.edt.passport_issue_place,
+          visa_number: $scope.edt.visa_number,
+          visa_type: $scope.edt.visa_type,
+          visa_issuing_authority: $scope.edt.visa_issuing_authority,
+          visa_issue_date: $scope.edt.visa_issue_date,
+          visa_expiry_date: $scope.edt.visa_expiry_date,
+          visa_issuing_place: $scope.edt.visa_issuing_place,
+          national_id: $scope.edt.national_id,
+          national_id_issue_date: $scope.edt.national_id_issue_date,
+          national_id_expiry_date: $scope.edt.national_id_expiry_date,
+          sibling_status: $scope.edt.sibling_status,
+          parent_id: $scope.edt.parent_id,
+          sibling_enroll: $scope.edt.sibling_enroll,
+          sibling_name: $scope.edt.sibling_name,
+          sibling_dob: $scope.edt.sibling_dob,
+          sibling_school_code: $scope.edt.sibling_school_code,
+          employee_type: $scope.edt.employee_type,
+          employee_code: $scope.edt.employee_code,
+          employee_school_code: $scope.edt.employee_school_code,
+          motherTounge_language_code: $scope.edt.motherTounge_language_code,
+          main_language_code: $scope.edt.main_language_code,
+          main_language_r_code: $scope.edt.main_language_r_code,
+          main_language_w_code: $scope.edt.main_language_w_code,
+          main_language_s_code: $scope.edt.main_language_s_code,
+          primary_contact_code: $scope.edt.primary_contact_code,
+          primary_contact_pref_code: $scope.edt.primary_contact_pref_code,
+          fee_payment_contact_pref_code:
+            $scope.edt.fee_payment_contact_pref_code,
+          transport_status: $scope.edt.transport_status,
+          transport_desc: $scope.edt.transport_desc,
+          father_salutation_code: $scope.edt.father_salutation_code,
+          father_first_name: $scope.edt.father_first_name,
+          father_middle_name: $scope.edt.father_middle_name,
+          father_last_name: $scope.edt.father_last_name,
+          father_family_name: $scope.edt.father_family_name,
+          father_family_name_ot: $scope.edt.father_family_name_ot,
+          father_nationality1_code: $scope.edt.father_nationality1_code,
+          father_nationality2_code: $scope.edt.father_nationality2_code,
+          father_appartment_number: $scope.edt.father_appartment_number,
+          father_building_number: $scope.edt.father_building_number,
+          father_street_number: $scope.edt.father_street_number,
+          father_area_number: $scope.edt.father_area_number,
+          father_city: $scope.edt.father_city,
+          father_state: $scope.edt.father_state,
+          father_country_code: $scope.edt.father_country_code,
+          father_summary_address: $scope.edt.father_summary_address,
+          father_po_box: $scope.edt.father_po_box,
+          father_phone: $scope.edt.father_phone,
+          father_email: $scope.edt.father_email,
+          father_mobile: $scope.edt.father_mobile,
+          father_fax: $scope.edt.father_fax,
+          father_occupation: $scope.edt.father_occupation,
+          father_company: $scope.edt.father_company,
+          father_passport_number: $scope.edt.father_passport_number,
+          sims_admission_father_national_id:
+            $scope.edt.sims_admission_father_national_id,
+          guardian_salutation_code: $scope.edt.guardian_salutation_code,
+          guardian_first_name: $scope.edt.guardian_first_name,
+          guardian_middle_name: $scope.edt.guardian_middle_name,
+          guardian_last_name: $scope.edt.guardian_last_name,
+          guardian_family_name: $scope.edt.guardian_family_name,
+          guardian_nationality1_code: $scope.edt.guardian_nationality1_code,
+          guardian_nationality2_code: $scope.edt.guardian_nationality2_code,
+          guardian_appartment_number: $scope.edt.guardian_appartment_number,
+          guardian_building_number: $scope.edt.guardian_building_number,
+          guardian_street_number: $scope.edt.guardian_street_number,
+          guardian_area_number: $scope.edt.guardian_area_number,
+          guardian_city: $scope.edt.guardian_city,
+          guardian_state: $scope.edt.guardian_state,
+          guardian_country_code: $scope.edt.guardian_country_code,
+          guardian_summary_address: $scope.edt.guardian_summary_address,
+          guardian_po_box: $scope.edt.guardian_po_box,
+          guardian_phone: $scope.edt.guardian_phone,
+          guardian_mobile: $scope.edt.guardian_mobile,
+          guardian_fax: $scope.edt.guardian_fax,
+          guardian_email: $scope.edt.guardian_email,
+          guardian_occupation: $scope.edt.guardian_occupation,
+          guardian_company: $scope.edt.guardian_company,
+          guardian_passport_number: $scope.edt.guardian_passport_number,
+          guardian_relationship_code: $scope.edt.guardian_relationship_code,
+          mother_salutation_code: $scope.edt.mother_salutation_code,
+          mother_first_name: $scope.edt.mother_first_name,
+          mother_middle_name: $scope.edt.mother_middle_name,
+          mother_last_name: $scope.edt.mother_last_name,
+          mother_family_name: $scope.edt.mother_family_name,
+          mother_name_ot: $scope.edt.mother_name_ot,
+          mother_nationality1_code: $scope.edt.mother_nationality1_code,
+          mother_nationality2_code: $scope.edt.mother_nationality2_code,
+          mother_appartment_number: $scope.edt.mother_appartment_number,
+          mother_building_number: $scope.edt.mother_building_number,
+          mother_street_number: $scope.edt.mother_street_number,
+          mother_area_number: $scope.edt.mother_area_number,
+          mother_city: $scope.edt.mother_city,
+          mother_state: $scope.edt.mother_state,
+          mother_country_code: $scope.edt.mother_country_code,
+          mother_summary_address: $scope.edt.mother_summary_address,
+          mother_po_box: $scope.edt.mother_po_box,
+          mother_phone: $scope.edt.mother_phone,
+          mother_mobile: $scope.edt.mother_mobile,
+          mother_fax: $scope.edt.mother_fax,
+          mother_email: $scope.edt.mother_email,
+          mother_occupation: $scope.edt.mother_occupation,
+          mother_passport_number: $scope.edt.mother_passport_number,
+          current_school_status: $scope.edt.current_school_status,
+          current_school_name: $scope.edt.current_school_name,
+          current_school_enroll_number: $scope.edt.current_school_enroll_number,
+          current_school_grade: $scope.edt.current_school_grade,
+          current_school_cur: $scope.edt.current_school_cur,
+          current_school_from_date: $scope.edt.current_school_from_date,
+          current_school_to_date: $scope.edt.current_school_to_date,
+          current_school_language: $scope.edt.current_school_language,
+          current_school_head_teacher: $scope.edt.current_school_head_teacher,
+          current_school_phone: $scope.edt.current_school_phone,
+          current_school_fax: $scope.edt.current_school_fax,
+          current_school_city: $scope.edt.current_school_city,
+          current_school_country_code: $scope.edt.current_school_country_code,
+          current_school_address: $scope.edt.current_school_address,
+          marketing_code: $scope.edt.marketing_code,
+          marketing_description: $scope.edt.marketing_description,
+          parent_status_code: $scope.edt.parent_status_code,
+          legal_custody_code: $scope.edt.legal_custody_code,
+          health_card_number: $scope.edt.health_card_number,
+          health_card_issue_date: $scope.edt.health_card_issue_date,
+          health_card_issuing_authority:
+            $scope.edt.health_card_issuing_authority,
+          blood_group_code: $scope.edt.blood_group_code,
+          medication_status: $scope.edt.medication_status,
+          medication_desc: $scope.edt.medication_desc,
+          disability_status: $scope.edt.disability_status,
+          disability_desc: $scope.edt.disability_desc,
+          behaviour_status: $scope.edt.behaviour_status,
+          behaviour_desc: $scope.edt.behaviour_desc,
+          health_restriction_status: $scope.edt.health_restriction_status,
+          health_restriction_desc: $scope.edt.health_restriction_desc,
+          health_hearing_status: $scope.edt.health_hearing_status,
+          health_hearing_desc: $scope.edt.health_hearing_desc,
+          health_vision_status: $scope.edt.health_vision_status,
+          health_vision_desc: $scope.edt.health_vision_desc,
+          health_other_status: $scope.edt.health_other_status,
+          health_other_desc: $scope.edt.health_other_desc,
+          gifted_status: $scope.edt.gifted_status,
+          gifted_desc: $scope.edt.gifted_desc,
+          music_status: $scope.edt.music_status,
+          music_desc: $scope.edt.music_desc,
+          sports_status: $scope.edt.sports_status,
+          sports_desc: $scope.edt.sports_desc,
+          language_support_status: $scope.edt.language_support_status,
+          language_support_desc: $scope.edt.language_support_desc,
+          declaration_status: $scope.edt.declaration_status,
+          fees_paid_status: $scope.edt.fees_paid_status,
+          fee_category_code: $scope.edt.fee_category_code,
+          ip: $scope.edt.ip,
+          dns: $scope.edt.dns,
+          user_code: $scope.edt.user_code,
+          status: $scope.edt.status,
+          sims_student_attribute1: $scope.edt.sims_student_attribute1,
+          sims_student_attribute2: $scope.edt.sims_student_attribute2,
+          sims_student_attribute3: $scope.edt.sims_student_attribute3,
+          sims_student_attribute4: $scope.edt.sims_student_attribute4,
+          sims_student_health_respiratory_status:
+            $scope.edt.sims_student_health_respiratory_status,
+          sims_student_health_respiratory_desc:
+            $scope.edt.sims_student_health_respiratory_desc,
+          sims_student_health_hay_fever_status:
+            $scope.edt.sims_student_health_hay_fever_status,
+          sims_student_health_hay_fever_desc:
+            $scope.edt.sims_student_health_hay_fever_desc,
+          sims_student_health_epilepsy_status:
+            $scope.edt.sims_student_health_epilepsy_status,
+          sims_student_health_epilepsy_desc:
+            $scope.edt.sims_student_health_epilepsy_desc,
+          sims_student_health_skin_status:
+            $scope.edt.sims_student_health_skin_status,
+          sims_student_health_skin_desc:
+            $scope.edt.sims_student_health_skin_desc,
+          sims_student_health_diabetes_status:
+            $scope.edt.sims_student_health_diabetes_status,
+          sims_student_health_diabetes_desc:
+            $scope.edt.sims_student_health_diabetes_desc,
+          sims_student_health_surgery_status:
+            $scope.edt.sims_student_health_surgery_status,
+          sims_student_health_surgery_desc:
+            $scope.edt.sims_student_health_surgery_desc,
+          sims_admission_recommendation:
+            $scope.edt.sims_admission_recommendation,
+          sims_admission_mother_national_id:
+            $scope.edt.sims_admission_mother_national_id,
+          sims_admission_guardian_national_id:
+            $scope.edt.sims_admission_guardian_national_id,
+          sims_fee_month_code: $scope.edt.sims_fee_month_code,
+          sims_student_attribute5: $scope.edt.sims_student_attribute5,
+          sims_student_attribute6: $scope.edt.sims_student_attribute6,
+          sims_student_attribute7: $scope.edt.sims_student_attribute7,
+          sims_student_attribute8: $scope.edt.sims_student_attribute8,
+          sims_student_attribute9: $scope.edt.sims_student_attribute9,
+          sims_student_attribute10: $scope.edt.sims_student_attribute10,
+          sims_student_attribute11: $scope.edt.sims_student_attribute11,
+          sims_student_attribute12: $scope.edt.sims_student_attribute12,
+          sims_admission_second_lang_code:
+            $scope.edt.sims_admission_second_lang_code,
+          sims_admission_third_lang_code:
+            $scope.edt.sims_admission_third_lang_code,
+          sims_admission_subject_code:
+            $scope.edt.sims_admission_second_lang_code +
+            "," +
+            $scope.edt.sims_admission_third_lang_code,
+        };
+
+        data2.push(data);
+
+        $http
+          .post(ENV.apiUrl + "api/common/Admission_dpsd/ApproveStudent", data2)
+          .then(function (res) {
+            $scope.display = true;
+            $scope.msg1 = res.data;
+          });
+
+        $scope.grid1 = true;
+        $("#myModal1").modal({ backdrop: "static", keyboard: true });
+      };
+
+      $scope.get_studentfee = function () {
+        $state.go("main.Sim043");
+      };
+      $scope.schoolcheck = function () {
+        if ($scope.edt.current_school_status === true) {
+          $scope.school_edit = false;
+        } else {
+          $scope.school_edit = true;
+        }
+      };
+
+      $scope.chk_desc = function () {
+        if ($scope.edt.marketing_code === true) {
+          $scope.desc_edit = false;
+        } else {
+          $scope.desc_edit = true;
+        }
+      };
+
+      $scope.chk_cicumstances = function () {
+        if ($scope.edt.parent_status_code === true) {
+          $scope.circum_edit = false;
+        } else {
+          $scope.circum_edit = true;
+        }
+      };
+
+      $scope.chk_disab_status = function () {
+        if ($scope.edt.disability_status === true) {
+          $scope.disab_edit = false;
+        } else {
+          $scope.disab_edit = true;
+        }
+      };
+
+      $scope.chk_health_res = function () {
+        if ($scope.edt.health_restriction_status === true) {
+          $scope.healthres_edit = false;
+        } else {
+          $scope.healthres_edit = true;
+        }
+      };
+
+      $scope.chk_medic_status = function () {
+        if ($scope.edt.medication_status === true) {
+          $scope.med_edit = false;
+        } else {
+          $scope.med_edit = true;
+        }
+      };
+
+      $scope.chk_other = function () {
+        if ($scope.edt.health_other_status === true) {
+          $scope.other_edit = false;
+        } else {
+          $scope.other_edit = true;
+        }
+      };
+
+      $scope.chk_hearing = function () {
+        if ($scope.edt.health_hearing_status === true) {
+          $scope.hearing_edit = false;
+        } else {
+          $scope.hearing_edit = true;
+        }
+      };
+
+      $scope.chk_vision = function () {
+        if ($scope.edt.health_vision_status === true) {
+          $scope.health_vision_edit = false;
+        } else {
+          $scope.health_vision_edit = true;
+        }
+      };
+
+      $scope.chk_behaviour = function () {
+        if ($scope.edt.behaviour_status === true) {
+          $scope.behaviour_edit = false;
+        } else {
+          $scope.behaviour_edit = true;
+        }
+      };
+
+      $scope.chk_gifted_status = function () {
+        if ($scope.edt.gifted_status === true) {
+          $scope.gifted_edit = false;
+        } else {
+          $scope.gifted_edit = true;
+        }
+      };
+
+      $scope.chk_music_pro = function () {
+        if ($scope.edt.music_status === true) {
+          $scope.music_edit = false;
+        } else {
+          $scope.music_edit = true;
+        }
+      };
+
+      $scope.chk_sport_pro = function () {
+        if ($scope.edt.sports_status === true) {
+          $scope.sport_edit = false;
+        } else {
+          $scope.sport_edit = true;
+        }
+      };
+
+      $scope.chk_lang_sup = function () {
+        if ($scope.edt.language_support_status === true) {
+          $scope.lang_sup_edit = false;
+        } else {
+          $scope.lang_sup_edit = true;
+        }
+      };
+
+      $scope.chk_Pri_contact = function () {
+        if ($scope.edt.primary_contact_code === true) {
+          $scope.pricont_edit = false;
+        } else {
+          $scope.pricont_edit = true;
+        }
+      };
+
+      $scope.chk_transport_requin = function () {
+        if ($scope.edt.transport_status === true) {
+          $scope.transreq_edit = false;
+        } else {
+          $scope.transreq_edit = true;
+        }
+      };
+
+      $scope.chk_employee = function () {
+        var v = document.getElementById("chk_employee");
+        if (v.checked === true) {
+          var v = document.getElementById("txt_emp_code");
+          v.disabled = false;
+        } else {
+          var v = document.getElementById("txt_emp_code");
+          v.disabled = true;
+        }
+      };
+
+      $scope.chk_Sibling_attend = function () {
+        if ($scope.edt.sibling_status === true) {
+          $scope.disableparent = false;
+        } else {
+          $scope.disableparent = true;
+        }
+      };
+
+      $scope.chk_learn_ther = function () {
+        if ($scope.edt.sims_admission_learning_therapy_status === true) {
+          $scope.learnther_edit = false;
+        } else {
+          $scope.learnther_edit = true;
+        }
+      };
+
+      $scope.chk_spec_edu = function () {
+        if ($scope.edt.sims_admission_special_education_status === true) {
+          $scope.spec_edu_edit = false;
+        } else {
+          $scope.spec_edu_edit = true;
+        }
+      };
+
+      $scope.chk_falled_grade = function () {
+        if ($scope.edt.sims_admission_falled_grade_status === true) {
+          $scope.falledgrade_edit = false;
+        } else {
+          $scope.falledgrade_edit = true;
+        }
+      };
+
+      $scope.chk_commun = function () {
+        if ($scope.edt.sims_admission_communication_status === true) {
+          $scope.commun_edit = false;
+        } else {
+          $scope.commun_edit = true;
+        }
+      };
+
+      $scope.chk_spec_activies = function () {
+        if ($scope.edt.sims_admission_specialAct_status === true) {
+          $scope.specActiv_edit = false;
+        } else {
+          $scope.specActiv_edit = true;
+        }
+      };
+
+      $scope.chk_studyingin = function () {
+        if ($scope.edt.sibling_status === true) {
+          $scope.Study_edit = false;
+          var v = document.getElementById("t3");
+          var v = document.getElementById("t4");
+          var v = document.getElementById("t5");
+          $scope.t = false;
+        } else {
+          $scope.Study_edit = true;
+          var v = document.getElementById("t3");
+          var v = document.getElementById("t4");
+          var v = document.getElementById("t5");
+          $scope.t = true;
+        }
+      };
+
+      $scope.chk_ticking = function () {
+        if ($scope.edt.declaration_status === true) {
+          $scope.tick_edit = false;
+          $scope.confirm_edit = false;
+        } else {
+          $scope.tick_edit = true;
+          $scope.confirm_edit = true;
+        }
+      };
+
+      $scope.chk_copy_mother_add = function () {
+        if ($scope.edt.copy_add === true) {
+          $scope.edt.mother_appartment_number =
+            $scope.edt.father_appartment_number;
+          $scope.edt.mother_area_number = $scope.edt.father_area_number;
+          $scope.edt.mother_building_number = $scope.edt.father_building_number;
+          $scope.edt.mother_street_number = $scope.edt.father_street_number;
+          $scope.edt.mother_city = $scope.edt.father_city;
+          $scope.edt.mother_state = $scope.edt.father_state;
+          $scope.edt.mother_country_code = $scope.edt.father_country_code;
+          $scope.edt.mother_po_box = $scope.edt.father_po_box;
+          $scope.edt.mother_nationality1_code =
+            $scope.edt.father_nationality1_code;
+          $scope.edt.mother_nationality2_code =
+            $scope.edt.father_nationality2_code;
+          $scope.edt.mother_summary_address = $scope.edt.father_summary_address;
+          $scope.edt.mother_phone = $scope.edt.father_phone;
+          $scope.edt.mother_po_box = $scope.edt.father_po_box;
+          $scope.edt.mother_mobile = $scope.edt.father_mobile;
+          $scope.edt.mother_occupation = $scope.edt.father_occupation;
+          $scope.edt.mother_email = $scope.edt.father_email;
+          $scope.edt.mother_company = $scope.edt.father_company;
+        } else {
+          $scope.edt.mother_appartment_number = "";
+          $scope.edt.mother_area_number = "";
+          $scope.edt.mother_building_number = "";
+          $scope.edt.mother_street_number = "";
+          $scope.edt.mother_city = "";
+          $scope.edt.mother_state = "";
+          $scope.edt.mother_country_code = "";
+          $scope.edt.mother_po_box = "";
+          $scope.edt.mother_nationality1_code = "";
+          $scope.edt.mother_nationality2_code = "";
+          $scope.edt.mother_summary_address = "";
+          $scope.edt.mother_phone = "";
+          $scope.edt.mother_po_box = "";
+          $scope.edt.mother_mobile = "";
+          $scope.edt.mother_occupation = "";
+          $scope.edt.mother_email = "";
+          $scope.edt.mother_company = "";
+        }
+      };
+
+      $scope.chk_copy_guar_add1 = function () {
+        if ($scope.edt.copy_add1 === true) {
+          $scope.edt.guardian_appartment_number =
+            $scope.edt.father_appartment_number;
+          $scope.edt.guardian_area_number = $scope.edt.father_area_number;
+          $scope.edt.guardian_building_number =
+            $scope.edt.father_building_number;
+          $scope.edt.guardian_street_number = $scope.edt.father_street_number;
+          $scope.edt.guardian_city = $scope.edt.father_city;
+          $scope.edt.guardian_state = $scope.edt.father_state;
+          $scope.edt.guardian_country_code = $scope.edt.father_country_code;
+          $scope.edt.guardian_po_box = $scope.edt.father_po_box;
+          $scope.edt.guardian_nationality1_code =
+            $scope.edt.father_nationality1_code;
+          $scope.edt.guardian_nationality2_code =
+            $scope.edt.father_nationality2_code;
+          $scope.edt.guardian_summary_address =
+            $scope.edt.father_summary_address;
+          $scope.edt.guardian_phone = $scope.edt.father_phone;
+          $scope.edt.guardian_po_box = $scope.edt.father_po_box;
+          $scope.edt.guardian_mobile = $scope.edt.father_mobile;
+          $scope.edt.guardian_occupation = $scope.edt.father_occupation;
+          $scope.edt.guardian_email = $scope.edt.father_email;
+          $scope.edt.guardian_company = $scope.edt.father_company;
+        } else {
+          $scope.edt.guardian_appartment_number = "";
+          $scope.edt.guardian_area_number = "";
+          $scope.edt.guardian_building_number = "";
+          $scope.edt.guardian_street_number = "";
+          $scope.edt.guardian_city = "";
+          $scope.edt.guardian_state = "";
+          $scope.edt.guardian_country_code = "";
+          $scope.edt.guardian_po_box = "";
+          $scope.edt.guardian_nationality1_code = "";
+          $scope.edt.guardian_nationality2_code = "";
+          $scope.edt.guardian_summary_address = "";
+          $scope.edt.guardian_phone = "";
+          $scope.edt.guardian_po_box = "";
+          $scope.edt.guardian_mobile = "";
+          $scope.edt.guardian_occupation = "";
+          $scope.edt.guardian_email = "";
+          $scope.edt.guardian_company = "";
+        }
+      };
+
+      $scope.GetFatherSumAddr = function () {
+        var country =
+          document.getElementById("cmb_father_country").options[
+            document.getElementById("cmb_father_country").selectedIndex
+          ].text;
+
+        var father_aprt = $("#txt_father_aprt").val().length;
+        var father_build = $("#txt_father_build").val().length;
+        var father_street = $("#txt_father_Street").val().length;
+        var father_area = $("#txt_father_area").val().length;
+        var father_city = $("#txt_father_city").val().length;
+        var father_state = $("#txt_father_state").val().length;
+        var father_country = $("#cmb_father_country").val().length;
+        var father_POBox = $("#txt_father_pobox").val().length;
+
+        document.getElementById("txt_father_summary_add").value =
+          $("#txt_father_aprt").val().length > 0
+            ? document.getElementById("txt_father_aprt").value + ","
+            : "";
+        document.getElementById("txt_father_summary_add").value +=
+          $("#txt_father_build").val().length > 0
+            ? document.getElementById("txt_father_build").value + ","
+            : "";
+        document.getElementById("txt_father_summary_add").value +=
+          $("#txt_father_Street").val().length > 0
+            ? document.getElementById("txt_father_Street").value + ","
+            : "";
+        document.getElementById("txt_father_summary_add").value +=
+          father_area > 0
+            ? document.getElementById("txt_father_area").value + ","
+            : "";
+        document.getElementById("txt_father_summary_add").value +=
+          father_city > 0
+            ? document.getElementById("txt_father_city").value + ","
+            : "";
+        document.getElementById("txt_father_summary_add").value +=
+          father_state > 0
+            ? document.getElementById("txt_father_state").value + ","
+            : "";
+        document.getElementById("txt_father_summary_add").value +=
+          father_country > 0 ? country + "," : "";
+        document.getElementById("txt_father_summary_add").value +=
+          father_POBox > 0
+            ? document.getElementById("txt_father_pobox").value
+            : "";
+      };
+
+      $scope.GetMotherSumAddr = function () {
+        var mother_aprt = $("#txt_mother_aprt").val().length;
+        var mother_build = $("#txt_mother_build").val().length;
+        var mother_street = $("#txt_mother_street").val().length;
+        var mother_area = $("#txt_mother_area").val().length;
+        var mother_city = $("#txt_mother_city").val().length;
+        var mother_state = $("#txt_mother_state").val().length;
+        var mother_country = $("#cmb_mother_country").val().length;
+        var mother_POBox = $("#txt_mother_pobox").val().length;
+
+        var country =
+          document.getElementById("cmb_mother_country").options[
+            document.getElementById("cmb_mother_country").selectedIndex
+          ].text;
+
+        document.getElementById("txt_mother_addr").value =
+          mother_aprt > 0
+            ? document.getElementById("txt_mother_aprt").value + ","
+            : "";
+        document.getElementById("txt_mother_addr").value +=
+          mother_build > 0
+            ? document.getElementById("txt_mother_build").value + ","
+            : "";
+        document.getElementById("txt_mother_addr").value +=
+          mother_street > 0
+            ? document.getElementById("txt_mother_street").value + ","
+            : "";
+        document.getElementById("txt_mother_addr").value +=
+          mother_area > 0
+            ? document.getElementById("txt_mother_area").value + ","
+            : "";
+        document.getElementById("txt_mother_addr").value +=
+          mother_city > 0
+            ? document.getElementById("txt_mother_city").value + ","
+            : "";
+        document.getElementById("txt_mother_addr").value +=
+          mother_state > 0
+            ? document.getElementById("txt_mother_state").value + ","
+            : "";
+        document.getElementById("txt_mother_addr").value +=
+          mother_country > 0 ? country + "," : "";
+        document.getElementById("txt_mother_addr").value +=
+          mother_POBox > 0
+            ? document.getElementById("txt_mother_pobox").value
+            : "";
+      };
+
+      $scope.GetGuardianSumAddr = function () {
+        var guar_aprt = $("#txt_guar_aprt").val().length;
+        var guar_build = $("#txt_guar_build").val().length;
+        var guar_street = $("#txt_guar_street").val().length;
+        var guar_area = $("#txt_guar_area").val().length;
+        var guar_city = $("#txt_guar_city").val().length;
+        var guar_state = $("#txt_guar_state").val().length;
+        var guar_country = $("#cmb_gar_country").val().length;
+        var guar_POBox = $("#txt_guar_pobox").val().length;
+
+        var country =
+          document.getElementById("cmb_gar_country").options[
+            document.getElementById("cmb_gar_country").selectedIndex
+          ].text;
+
+        document.getElementById("txt_guar_addr").value =
+          guar_aprt > 0
+            ? document.getElementById("txt_guar_aprt").value + ","
+            : "";
+        document.getElementById("txt_guar_addr").value +=
+          guar_build > 0
+            ? document.getElementById("txt_guar_build").value + ","
+            : "";
+        document.getElementById("txt_guar_addr").value +=
+          guar_street > 0
+            ? document.getElementById("txt_guar_street").value + ","
+            : "";
+        document.getElementById("txt_guar_addr").value +=
+          guar_area > 0
+            ? document.getElementById("txt_guar_area").value + ","
+            : "";
+        document.getElementById("txt_guar_addr").value +=
+          guar_city > 0
+            ? document.getElementById("txt_guar_city").value + ","
+            : "";
+        document.getElementById("txt_guar_addr").value +=
+          guar_state > 0
+            ? document.getElementById("txt_guar_state").value + ","
+            : "";
+        document.getElementById("txt_guar_addr").value +=
+          guar_country > 0 ? country + "," : "";
+        document.getElementById("txt_guar_addr").value +=
+          guar_POBox > 0 ? document.getElementById("txt_guar_pobox").value : "";
+      };
+      $scope.chk_more_sibling = function () {
+        var v = document.getElementById("chk_more_sibling");
+        if (v.checked === true) {
+          var v = document.getElementById("txt_more_sibling");
+          v.disabled = false;
+        } else {
+          var v = document.getElementById("txt_more_sibling");
+          v.disabled = true;
+        }
+      };
+
+      $scope.chk_employee = function () {
+        var v = document.getElementById("chk_employee");
+        if (v.checked === true) {
+          var v = document.getElementById("txt_emp_code");
+          v.disabled = false;
+        } else {
+          var v = document.getElementById("txt_emp_code");
+          v.disabled = true;
+        }
+      };
+
+      $scope.getFatherDetails = function () {
+        var data = $scope.edt;
+        var v = document.getElementById("txt_mother_aprt");
+        v.value = document.getElementById("txt_father_aprt").value;
+        data.mother_appartment_number = v.value;
+
+        var v = document.getElementById("txt_mother_build");
+        v.value = document.getElementById("txt_father_build").value;
+        data.mother_building_number = v.value;
+
+        var v = document.getElementById("txt_mother_street");
+        v.value = document.getElementById("txt_father_Street").value;
+        data.mother_street_number = v.value;
+
+        var v = document.getElementById("txt_mother_area");
+        v.value = document.getElementById("txt_father_area").value;
+        data.mother_area_number = v.value;
+
+        var v = document.getElementById("txt_mother_city");
+        v.value = document.getElementById("txt_father_city").value;
+        data.mother_city = v.value;
+
+        var v = document.getElementById("txt_mother_state");
+        v.value = document.getElementById("txt_father_state").value;
+        data.mother_state = v.value;
+
+        var v = document.getElementById("cmb_mother_country");
+        v.value = document.getElementById("cmb_father_country").value;
+        data.mother_country_code = v.value;
+
+        var v = document.getElementById("txt_mother_pobox");
+        v.value = document.getElementById("txt_father_pobox").value;
+        data.mother_po_box = v.value;
+      };
+
+      $scope.GetFatherSumAddr = function () {
+        var data = $scope.edt;
+
+        var father_aprt = $("#txt_father_aprt").val().length;
+        var father_build = $("#txt_father_build").val().length;
+        var father_street = $("#txt_father_Street").val().length;
+        var father_area = $("#txt_father_area").val().length;
+        var father_university = $("#txt_father_uni").val().length;
+        var father_city = $("#txt_father_city").val().length;
+        var father_state = $("#txt_father_state").val().length;
+        var father_country = $("#cmb_father_country").val().length;
+        var father_POBox = $("#txt_father_pobox").val().length;
+
+        var country =
+          document.getElementById("cmb_father_country").options[
+            document.getElementById("cmb_father_country").selectedIndex
+          ].text;
+        document.getElementById("txt_father_summary_add").value =
+          $("#txt_father_aprt").val().length > 0
+            ? document.getElementById("txt_father_aprt").value + ","
+            : "";
+        document.getElementById("txt_father_summary_add").value +=
+          $("#txt_father_build").val().length > 0
+            ? document.getElementById("txt_father_build").value + ","
+            : "";
+        document.getElementById("txt_father_summary_add").value +=
+          $("#txt_father_Street").val().length > 0
+            ? document.getElementById("txt_father_Street").value + ","
+            : "";
+        document.getElementById("txt_father_summary_add").value +=
+          father_university > 0
+            ? document.getElementById("txt_father_uni").value + ","
+            : "";
+        document.getElementById("txt_father_summary_add").value +=
+          father_area > 0
+            ? document.getElementById("txt_father_area").value + ","
+            : "";
+        document.getElementById("txt_father_summary_add").value +=
+          father_city > 0
+            ? document.getElementById("txt_father_city").value + ","
+            : "";
+        document.getElementById("txt_father_summary_add").value +=
+          father_state > 0
+            ? document.getElementById("txt_father_state").value + ","
+            : "";
+        document.getElementById("txt_father_summary_add").value +=
+          father_country > 0 ? country + "," : "";
+        document.getElementById("txt_father_summary_add").value +=
+          father_POBox > 0
+            ? document.getElementById("txt_father_pobox").value
+            : "";
+
+        var v = document.getElementById("txt_father_summary_add");
+        data.father_summary_address = v.value;
+      };
+
+      //communication
+      $scope.getCommunicate = function () {
+        $scope.flg_chat = true;
+        $scope.flg_email = false;
+        $scope.flg_tele = false;
+        $("#view_communication").modal({ backdrop: "static", keyboard: true });
+        admdetails = [];
+        var adm_data = [];
+        $scope.admdetail_lst = [];
+
+        for (var i = 0; i < $scope.dash_data.length; i++) {
+          var t = $scope.dash_data[i].admission_number;
+          var v = document.getElementById(t);
+
+          if ($scope.dash_data[i].admission_number1) {
+            adm_data.push($scope.dash_data[i].admission_number);
+            admdetails =
+              admdetails + $scope.dash_data[i].admission_number + ",";
+            $scope.admdetail_lst.push($scope.dash_data[i]);
+          }
+        }
+        if ($scope.admdetail_lst.length >= 1) {
+          $scope.hide_tel = false;
+        } else {
+          $scope.hide_tel = true;
+        }
+        $scope.div_Communication = true;
+        $scope.maingrid1 = false;
+        $scope.maingrid2 = false;
+        $scope.email = [];
+        $http
+          .get(
+            ENV.apiUrl +
+              "api/common/AdmissionDashboard_dpsdNew/GetAdmissionTemplates"
+          )
+          .then(function (res) {
+            $scope.template_data = res.data;
+            for (var i = 0; i < res.data.length; i++) {
+              if (
+                $scope.template_data[i].sims_msg_subject ==
+                "DPS-MIS Admission Department"
+              ) {
+                $scope.email["sims_msg_subject"] =
+                  $scope.template_data[i].sims_msg_subject;
+              }
+            }
+            $scope.getbody($scope.email["sims_msg_subject"]);
+          });
+
+        //new
+        var a1 = { opr: "Z", adm_nos: admdetails };
+        $http
+          .post(
+            ENV.apiUrl +
+              "api/common/AdmissionDashboard_dpsdNew/GetAdmission_EmailIds_New",
+            a1
+          )
+          .then(function (res) {
+            $scope.emailId_data = res.data.table;
+          });
+        //end
+
+        $http
+          .post(ENV.apiUrl + "api/MapingController/SearchEmployee")
+          .then(function (dataEMPRecord) {
+            $scope.GetAllTeacherName = dataEMPRecord.data;
+          });
+
+        $scope.telephonic_click();
+      };
+
+      $scope.getCommunicate_new_one = function () {
+        $scope.flg_chat = true;
+        $scope.flg_email = false;
+        $scope.flg_tele = false;
+        $("#view_communication").modal({ backdrop: "static", keyboard: true });
+        admdetails = [];
+        var adm_data = [];
+        $scope.admdetail_lst = [];
+        admdetails = admdetails + $scope.adm_number + ",";
+        $scope.admdetail_lst.push($scope.admobj);
+
+        if ($scope.admdetail_lst.length > 1) $scope.hide_tel = true;
+        else $scope.hide_tel = false;
+        $scope.div_Communication = true;
+        $scope.maingrid1 = false;
+        $scope.maingrid2 = false;
+        $scope.email = [];
+
+        $http
+          .get(
+            ENV.apiUrl +
+              "api/common/AdmissionDashboard_dpsdNew/GetAdmissionTemplates"
+          )
+          .then(function (res) {
+            $scope.template_data = res.data;
+            for (var i = 0; i < res.data.length; i++) {
+              if (
+                $scope.template_data[i].sims_msg_subject ==
+                "DPS-MIS Admission Department"
+              ) {
+                $scope.email["sims_msg_subject"] =
+                  $scope.template_data[i].sims_msg_subject;
+              }
+            }
+            $scope.getbody($scope.email["sims_msg_subject"]);
+          });
+
+        //new
+        var a1 = { opr: "Z", adm_nos: admdetails };
+        $http
+          .post(
+            ENV.apiUrl +
+              "api/common/AdmissionDashboard_dpsdNew/GetAdmission_EmailIds_New",
+            a1
+          )
+          .then(function (res) {
+            $scope.emailId_data = res.data.table;
+          });
+        //end
+
+        $scope.telephonic_click();
+      };
+
+      $scope.telephonic_click = function () {
+        var dataforUpdate = [];
+        $scope.save_btn = true;
+        $scope.table = true;
+        $scope.Update_btn = false;
+        $scope.cancel_btn = false;
+        $scope.users = $rootScope.globals.currentUser.username;
+        $scope.Myform1.$setPristine();
+        $scope.Myform1.$setUntouched();
+        $scope.getgrid_tel();
+      };
+
+      $scope.getgrid_tel = function () {
+        $scope.editor = true;
+        $scope.display = true;
+        $scope.save_btn = true;
+        $scope.table = true;
+        $scope.Update_btn = false;
+        $scope.cancel_btn = false;
+        $scope.save_btn = true;
+        $scope.int = {};
+        $scope.int["sims_comm_user_code"] =
+          $scope.admdetail_lst[0].admission_number;
+        $scope.int["sims_comm_date"] = moment(new Date()).format("DD-MM-YYYY");
+        $scope.int["sims_follow_up_date"] = moment(new Date()).format(
+          "DD-MM-YYYY"
+        );
+
+        $http
+          .get(
+            ENV.apiUrl +
+              "api/TelephonicConversationDetails/get_TelephonicConversationDetails?pros=" +
+              $scope.admdetail_lst[0].admission_number
+          )
+          .then(function (res1) {
+            $scope.CreDiv = res1.data;
+          });
+      };
+
+      $scope.save_tel = function (Myform) {
+        var datasend = [];
+        if (Myform) {
+          $scope.int["opr"] = "I";
+          $scope.int["sims_comm_user_by"] = $scope.users;
+          datasend.push($scope.int);
+          $http
+            .post(
+              ENV.apiUrl +
+                "api/TelephonicConversationDetails/CUDTelephonicConversationDetails",
+              datasend
+            )
+            .then(function (res) {
+              $scope.msg1 = res.data;
+
+              if ($scope.msg1 === true) {
+                swal({
+                  text: "Record Inserted Successfully",
+                  imageUrl: "assets/img/check.png",
+                  showCloseButton: true,
+                  width: 300,
+                  height: 200,
+                });
+
+                $scope.int = {};
+
+                //show data
+                $scope.getgrid_tel();
+              } else {
+                swal("", "Record not inserted");
+              }
+            });
+        }
+      };
+
+      $scope.edit_tel = function (str) {
+        $scope.editor = false;
+        $scope.Update_btn = true;
+        $scope.cancel_btn = true;
+        $scope.table = false;
+        $scope.display = true;
+        $scope.save_btn = false;
+        $scope.Evidences = true;
+        $scope.divcode_readonly = true;
+
+        $scope.int = {
+          sims_comm_user_code: str.sims_comm_user_code,
+          sims_comm_message_remark: str.sims_comm_message_remark,
+          sims_comm_message_feedback: str.sims_comm_message_feedback,
+          sims_comm_date: str.sims_comm_date,
+          sims_comm_number: str.sims_comm_number,
+        };
+      };
+
+      $scope.update_tel = function (Myform) {
+        var dataforUpdate = [];
+        if (Myform) {
+          var data = $scope.int;
+          data.opr = "U";
+          dataforUpdate.push(data);
+          $http
+            .post(
+              ENV.apiUrl +
+                "api/TelephonicConversationDetails/CUDTelephonicConversationDetails",
+              dataforUpdate
+            )
+            .then(function (msg) {
+              $scope.msg1 = msg.data;
+              if ($scope.msg1 === true) {
+                swal({
+                  text: "Record Updated Successfully",
+                  imageUrl: "assets/img/check.png",
+                  showCloseButton: true,
+                  width: 300,
+                  height: 200,
+                });
+                $scope.getgrid_tel();
+              } else {
+                swal({
+                  text: "Record Not Update / Order No Is Exists",
+                  imageUrl: "assets/img/close.png",
+                  showCloseButton: true,
+                  width: 300,
+                  height: 200,
+                });
+              }
+              //search update data
+              $scope.searchbutton();
+            });
+          dataforUpdate = [];
+          $scope.table = true;
+          $scope.display = false;
+        }
+      };
+
+      $scope.Cancel_tel = function () {
+        $scope.temp = "";
+        $scope.table = true;
+        $scope.display = true;
+        $scope.int = " ";
+        $scope.editor = true;
+        $scope.save_btn = true;
+        $scope.Update_btn = false;
+        scope.Myform1.$setPristine();
+        $scope.Myform1.$setUntouched();
+      };
+      $scope.getCommunicate_new = function (obj) {
+        $scope.flg_chat = true;
+        $scope.flg_email = true;
+        $scope.flg_tele = true;
+
+        $scope.div_Communication = true;
+        $scope.maingrid1 = false;
+        $scope.maingrid2 = false;
+        $scope.email = [];
+
+        $http
+          .get(ENV.apiUrl + "api/common/ProspectDashboard/GetCommMethods")
+          .then(function (res) {
+            $scope.method_data = res.data;
+          });
+
+        $http
+          .get(
+            ENV.apiUrl +
+              "api/common/AdmissionDashboard_dpsdNew/getCommunication?adm_no=" +
+              obj.admission_number
+          )
+          .then(function (res) {
+            $scope.comm_data = res.data;
+            $scope.totalItems4 = $scope.comm_data.length;
+            $scope.todos4 = $scope.comm_data;
+            $scope.makeTodos4();
+            $scope.grid1 = true;
+            $scope.display1 = false;
+          });
+
+        $http
+          .get(
+            ENV.apiUrl +
+              "api/TelephonicConversationDetails/get_TelephonicConversationDetails?pros=" +
+              obj.pros_num
+          )
+          .then(function (res1) {
+            $scope.CreDiv = res1.data;
+          });
+      };
+
+      $("#text-editor").wysihtml5();
+      $("#text-editor1").wysihtml5();
+
+      $scope.getbody = function (msg_type) {
+        $http
+          .get(
+            ENV.apiUrl +
+              "api/common/AdmissionDashboard_dpsdNew/GetAdmissionTemplatesBody?template_subject=" +
+              msg_type
+          )
+          .then(function (res) {
+            $scope.tempBody_data = res.data;
+            var body = $scope.tempBody_data.sims_msg_body;
+            var v = document.getElementById("text-editor");
+            v.value = body;
+            $scope.email.msgbody = v.value;
+            $scope.flag = false;
+            $("#text-editor")
+              .data("wysihtml5")
+              .editor.setValue($scope.email.msgbody);
+
+            $scope.email["email_subject"] = msg_type;
+
+            $http
+              .get(
+                ENV.apiUrl +
+                  "api/common/Email/GetcheckEmailProfile?sr_no=" +
+                  $scope.tempBody_data.sims_msg_sr_no
+              )
+              .then(function (res) {
+                $scope.emailProfile_data = res.data;
+              });
+          });
+      };
+
+      var data1 = [];
+      var lst_cc = [];
+
+      //send email
+      $scope.sendMail = function () {
+        $scope.email_exists = false;
+
+        var email_data = [];
+        var define_admission = "";
+
+        if ($scope.email.sims_msg_subject == "") {
+          swal({
+            title: "Alert",
+            text: "Please Select Template to Sent Mail.",
+            showCloseButton: true,
+            width: 380,
+          });
+          return;
+        } else {
+          $http
+            .get(
+              ENV.apiUrl +
+                "api/common/AdmissionDashboard_dpsdNew/GetAdmissionTemplatesBody?template_subject=" +
+                $scope.email.sims_msg_subject
+            )
+            .then(function (res) {
+              $scope.TemplatesBody_data = res.data;
+
+              $scope.sims_msg_body = $scope.TemplatesBody_data.sims_msg_body;
+              $scope.sims_msg_signature =
+                $scope.TemplatesBody_data.sims_msg_signature;
+
+              var msgbody = $("#text-editor").val();
+
+              define_admission = admdetails;
+              var adm_number = admdetails;
+
+              for (var i = 0; i < $scope.emailId_data.length; i++) {
+                var adm_no = adm_number.indexOf(",");
+                var admission_num = adm_number.substr(0, adm_no);
+                adm_number = adm_number.substr(adm_no + 1);
+                $scope.emailId_data[i].chk_email = true;
+
+                if ($scope.emailId_data[i].chk_email === true) {
+                  var data = {
+                    emailsendto: $scope.emailId_data[i].emailid,
+                    body: msgbody,
+                    subject: $scope.email.email_subject,
+                    comm_desc: msgbody,
+                    admis_num: admission_num,
+                    enrollnumber: admission_num,
+                    comm_method: "E",
+                    comm_date: $scope.ddMMyyyy,
+                    sender_emailid: $scope.emailProfile_data,
+                    sims_recepient_id: "0",
+                  };
+
+                  email_data.push(data);
+
+                  $scope.email_exists = true;
+                }
+              }
+
+              if (
+                ($scope.email.ccTo == "" || $scope.email.ccTo == undefined) &&
+                $scope.email_exists === false
+              ) {
+                swal({
+                  title: "Alert",
+                  text: "Unable to Sent Mail",
+                  showCloseButton: true,
+                  width: 380,
+                });
+              }
+
+              if ($scope.email.ccTo != "" || $scope.email.ccTo != undefined) {
+                var v = [];
+                var s = $scope.email.ccTo;
+                if (s != null) {
+                  v = s.split(",");
+                }
+
+                for (var i = 0; i < v.length; i++) {
+                  var data = {
+                    emailsendto: v[i],
+                    body: msgbody,
+                    subject: $scope.email.email_subject,
+                    comm_desc: msgbody,
+                    admis_num: admission_num,
+                    enrollnumber: "",
+                    comm_method: "E",
+                    comm_date: $scope.ddMMyyyy,
+                    sender_emailid: $scope.emailProfile_data,
+                    sims_recepient_id: "1",
+                  };
+
+                  email_data.push(data);
+                }
+
+                var data2 = {
+                  attFilename: "",
+                };
+                lst_cc.push(data2);
+              }
+
+              $http
+                .post(
+                  ENV.apiUrl +
+                    "api/common/AdmissionDashboard_dpsdNew/CUDCommunication",
+                  email_data
+                )
+                .then(function (res) {
+                  $scope.Admcomm_data = res.data;
+
+                  if ($scope.Admcomm_data === true) {
+                    $http
+                      .post(
+                        ENV.apiUrl +
+                          "api/common/Email/ScheduleMails_dpsd?filenames=" +
+                          JSON.stringify(lst_cc),
+                        email_data
+                      )
+                      .then(function (res) {
+                        $scope.ScheduleMails_data = res.data;
+
+                        if ($scope.ScheduleMails_data === true) {
+                          swal({
+                            text: "The email has been sent successfully.",
+                            imageUrl: "assets/img/check.png",
+                            showCloseButton: true,
+                            width: 380,
+                          });
+                        } else {
+                          $scope.commnModaldisplay();
+                        }
+
+                        $scope.commnModaldisplay();
+                      });
+                  }
+                });
+            });
+        }
+      };
+      //end
+
+      $scope.insertTag = function () {
+        //changeCategorya
+
+        for (var i = 0; i < $scope.dash_data.length; i++) {
+          var t = "";
+          var admission_number = "";
+          var sims_admission_tag_code = "";
+          var sims_admission_tag_name = "";
+
+          if ($scope.dash_data[i].admission_number1 === true) {
+            admission_number = $scope.dash_data[i].admission_number;
+            sims_admission_tag_code = $scope.edt.sims_admission_tag;
+            for (var j = 0; j < $scope.AllCategory.length; j++) {
+              if (
+                $scope.AllCategory[j].sims_admission_tag_code ===
+                sims_admission_tag_code
+              ) {
+                sims_admission_tag_name =
+                  $scope.AllCategory[j].sims_admission_tag_name;
+              }
+            }
+            var Student_tag_code = {
+              admission_number: admission_number,
+              sims_admission_tag_code: sims_admission_tag_code,
+              sims_admission_tag_name: sims_admission_tag_name,
+              opr: "ST",
+            };
+
+            $http
+              .post(
+                ENV.apiUrl + "api/common/AdmissionDashboard_dpsdNew/Addtag",
+                Student_tag_code
+              )
+              .then(function (msg) {
+                $scope.msg1 = msg.data;
+                Student_tag_code = {};
+                if ($scope.msg1 === true) {
+                  swal({
+                    text: "Tag Added Successfully",
+                    imageUrl: "assets/img/check.png",
+                    width: 300,
+                  });
+                } else if ($scope.msg1 === false) {
+                  swal({
+                    text: "Tag Not Added " + $scope.msg1,
+                    imageUrl: "assets/img/close.png",
+                    width: 300,
+                  });
+                } else {
+                  swal("Error-" + $scope.msg1);
+                }
+              });
+
+            $scope.getalldata(
+              $scope.dash_data[i].curr_code,
+              $scope.dash_data[i].academic_year,
+              $scope.grade_code,
+              $scope.btn_visible,
+              $scope.gender,
+              $scope.btn_nationality,
+              $scope.btn_emp,
+              $scope.btn_siblingenroll,
+              $scope.paid_status,
+              ""
+            );
+          }
+        }
+      };
+
+      $scope.removeTag = function () {
+        for (var i = 0; i < $scope.dash_data.length; i++) {
+          var t = "";
+          var admission_number = "";
+          var sims_admission_tag_code = "";
+          var sims_admission_tag_name = "";
+
+          if ($scope.dash_data[i].admission_number1 === true) {
+            admission_number = $scope.dash_data[i].admission_number;
+            sims_admission_tag_code = $scope.edt.sims_admission_tag;
+            for (var j = 0; j < $scope.AllCategory.length; j++) {
+              if (
+                $scope.AllCategory[j].sims_admission_tag_code ===
+                sims_admission_tag_code
+              ) {
+                sims_admission_tag_name =
+                  $scope.AllCategory[j].sims_admission_tag_name;
+              }
+            }
+            var Student_tag_code = {
+              admission_number: admission_number,
+              sims_admission_tag_code: sims_admission_tag_code,
+              sims_admission_tag_name: sims_admission_tag_name,
+              opr: "RT",
+            };
+
+            $http
+              .post(
+                ENV.apiUrl + "api/common/AdmissionDashboard_dpsdNew/Removetag",
+                Student_tag_code
+              )
+              .then(function (msg) {
+                $scope.msg1 = msg.data;
+                Student_tag_code = {};
+                if ($scope.msg1 === true) {
+                  swal({
+                    text: "Tag Removed Successfully",
+                    imageUrl: "assets/img/check.png",
+                    width: 300,
+                  });
+                } else if ($scope.msg1 === false) {
+                  swal({
+                    text: "Tag Not Removed " + $scope.msg1,
+                    imageUrl: "assets/img/close.png",
+                    width: 300,
+                  });
+                } else {
+                  swal("Error-" + $scope.msg1);
+                }
+              });
+
+            $scope.getalldata(
+              $scope.dash_data[i].curr_code,
+              $scope.dash_data[i].academic_year,
+              $scope.grade_code,
+              $scope.btn_visible,
+              $scope.gender,
+              $scope.btn_nationality,
+              $scope.btn_emp,
+              $scope.btn_siblingenroll,
+              $scope.paid_status,
+              ""
+            );
+          }
+        }
+      };
+
+      $scope.commnModaldisplay = function () {
+        $scope.email = [];
+        $scope.emailId_data = [];
+        $scope.maingrid1 = true;
+        $scope.maingrid2 = true;
+        $("#text-editor").data("wysihtml5").editor.clear();
+        $scope.div_Communication = false;
+      };
+
+      $scope.CancelEmailId = function (indx) {
+        $scope.emailId_data.splice(indx, 1);
+      };
+
+      /*start Upload*/
+
+      var formdata = new FormData();
+
+      $scope.getTheFiles = function ($files) {
+        $scope.filesize = true;
+        angular.forEach($files, function (value, key) {
+          formdata.append(key, value);
+          var i = 0;
+          if ($files[i].size > 2000000) {
+            $scope.filesize = false;
+            $scope.edt.photoStatus = false;
+            swal({
+              text: "File Should Not Exceed 2 mb.",
+              imageUrl: "assets/img/notification-alert.png",
+            });
+          }
+        });
+      };
+      var files, filename1, fortype, photofile;
+      $scope.uploadClick = function (str) {
+        $scope.filesize = true;
+        $scope.edt1 = str;
+        $scope.edt.photoStatus = true;
+        $scope.ins = false;
+        formdata = new FormData();
+      };
+
+      $scope.file_changed = function (element, str) {
+        photofile = element.files[0];
+
+        var filesData = element.files;
+        $scope.photo_filename = photofile.name;
+
+        var len = 0;
+        len = $scope.photo_filename.split(".");
+        filename1 = len[0];
+        fortype = $scope.photo_filename.split(".")[len.length - 1];
+        $scope.photo_filename = photofile.type;
+        if (filesData.length) {
+          files = new FormData();
+          for (var i = 0; i < filesData.length; i++) {
+            var fileNamedata = filesData[i].name;
+            var filenamExtension = fileNamedata.split(".");
+            files.append(
+              filesData[i].name,
+              filesData[i],
+              "Web\\" + filesData[i].name.replace(/\s/g, "")
+            );
+          }
+        }
+
+        var reader = new FileReader();
+        reader.onload = function (e) {
+          $scope.$apply(function () {
+            $scope.prev_img = e.target.result;
+          });
+        };
+        reader.readAsDataURL(photofile);
+
+        if (element.files[0].size < 2000000) {
+          if ($scope.edt1.count < 2) {
+            if (
+              $scope.edt1.sims_admission_doc_path == null ||
+              $scope.edt1.sims_admission_doc_path == ""
+            ) {
+              $scope.edt1.count = $scope.edt1.count;
+            } else {
+              $scope.edt1.count = $scope.edt1.count + 1;
+            }
+            {
+              var request = {
+                method: "POST",
+                url:
+                  ENV.apiUrl +
+                  "api/AssignmentUpload/upload1?filename=" +
+                  $scope.edt1.admis_num +
+                  "_" +
+                  $scope.edt1.sims_criteria_code +
+                  "_" +
+                  $scope.edt1.count +
+                  "(" +
+                  $filter("date")(new Date(), "dd-MM-yyyy") +
+                  "-" +
+                  $filter("date")(new Date(), "HH-mm-ss") +
+                  ")" +
+                  "." +
+                  fortype +
+                  "&location=" +
+                  "Docs/Student/",
+                data: files,
+                headers: {
+                  "Content-Type": undefined,
+                },
+              };
+              $http(request).success(function (d) {
+                var data = {
+                  admis_num: $scope.edt1.admis_num,
+                  sims_criteria_code: $scope.edt1.sims_criteria_code,
+                  sims_admission_doc_path: d,
+                  sims_admission_doc_path_old:
+                    $scope.edt1.sims_admission_doc_path,
+                };
+
+                if (
+                  data.sims_admission_doc_path != null ||
+                  data.sims_admission_doc_path != ""
+                ) {
+                  if (
+                    $scope.edt1.sims_admission_doc_path == null ||
+                    $scope.edt1.sims_admission_doc_path == ""
+                  ) {
+                    data.sims_admission_doc_status = "false";
+                    data.sims_admission_doc_verify = "false";
+                    data.opr = "N";
+                    $http
+                      .post(
+                        ENV.apiUrl +
+                          "api/common/AdmissionDashboard_dpsdNew/CUD_Update_Admission_Doc",
+                        data
+                      )
+                      .then(function (res) {
+                        $scope.ins = res.data;
+                        if (res.data) {
+                          swal({
+                            text: "Document Updated Successfully",
+                            imageUrl: "assets/img/check.png",
+                            showCloseButton: true,
+                            width: 380,
+                          });
+                          $scope.edt1.count = $scope.edt1.count + 1;
+                        }
+
+                        $scope.UploadDocument($scope.edt1.admis_num);
+                      });
+                  } else {
+                    $http
+                      .post(
+                        ENV.apiUrl +
+                          "api/common/AdmissionDashboard_dpsdNew/CUD_Insert_Admission_Doc",
+                        data
+                      )
+                      .then(function (res) {
+                        $scope.ins = res.data;
+                        if (res.data) {
+                          swal({
+                            text: "Document Uploaded Successfully",
+                            imageUrl: "assets/img/check.png",
+                            showCloseButton: true,
+                            width: 380,
+                          });
+                          $scope.edt1.count = $scope.edt1.count + 1;
+                        }
+
+                        $scope.UploadDocument($scope.edt1.admis_num);
+                      });
+                  }
+                }
+              });
+            }
+          } else {
+            swal({
+              title: "Alert",
+              text: "You Can Upload Max 2 File Documents For Each Criteria",
+              showCloseButton: true,
+              width: 380,
+            });
+          }
+        }
+      };
+
+      $scope.add_upload_doc = function () {
+        var data = $scope.Upload_doc_datails;
+        $http
+          .post(
+            ENV.apiUrl +
+              "api/common/AdmissionDashboard_dpsdNew/CUD_Update_Admission_DocList",
+            data
+          )
+          .then(function (res) {
+            $scope.ins = res.data;
+            if (res.data) {
+              $scope.maingrid1 = true;
+              $scope.Upload_doc = false;
+            }
+            $scope.getalldata(
+              $scope.edt.curr_code,
+              $scope.edt.academic_year,
+              $scope.edt.grade_code,
+              $scope.btn_visible,
+              $scope.gender,
+              $scope.btn_nationality,
+              $scope.btn_emp,
+              $scope.btn_siblingenroll,
+              $scope.paid_status
+            );
+          });
+      };
+
+      $scope.UploadDocModal_Reset = function () {
+        $scope.maingrid1 = true;
+        $scope.maingrid2 = true;
+        $scope.Upload_doc = false;
+      };
+
+      $scope.doc_delete = function (doc_path, crit_code, adm_no) {
+        swal({
+          title: "",
+          text: "Are you sure you want to Delete?",
+          showCloseButton: true,
+          showCancelButton: true,
+          confirmButtonText: "Yes",
+          width: 380,
+          cancelButtonText: "No",
+        }).then(function (isConfirm) {
+          if (isConfirm) {
+            $http
+              .post(
+                ENV.apiUrl +
+                  "api/common/AdmissionDashboard_dpsdNew/CUD_Delete_Admission_Doc?adm_no=" +
+                  adm_no +
+                  "&criteria_code=" +
+                  crit_code +
+                  "&doc_path=" +
+                  doc_path
+              )
+              .then(function (res) {
+                $scope.del = res.data;
+                if (res.data) {
+                  swal({
+                    text: "Document Deleted Successfully",
+                    imageUrl: "assets/img/check.png",
+                    showCloseButton: true,
+                    width: 380,
+                  });
+                }
+                $scope.UploadDocument(adm_no);
+              });
+          }
+        });
+      };
+
+      $scope.UploadDocument = function (adm_no) {
+        $http
+          .get(
+            ENV.apiUrl +
+              "api/common/AdmissionDashboard_dpsdNew/GetCriteriaName?admission_num=" +
+              adm_no
+          )
+          .then(function (res) {
+            $scope.Upload_doc_datails = res.data;
+            for (var i = 0; i < $scope.Upload_doc_datails.length; i++) {
+              $scope.Upload_doc_datails[i] = res.data[i];
+              $scope.visible = [];
+              $scope.visible = res.data[i].sims_admission_doc_path.split(",");
+              $scope.Upload_doc_datails[i].path = $scope.visible;
+            }
+            $scope.Upload_doc = true;
+            $scope.maingrid1 = false;
+            $scope.maingrid2 = false;
+            $scope.edt.sims_admission_doc_path1 = "NO";
+          });
+      };
+
+      /*End Upload*/
+      //added for email checkbox
+      $scope.chk = function () {
+        var main = document.getElementById("mainchkemail");
+
+        if (main.checked === true) {
+          for (var i = 0; i < $scope.emailId_data.length; i++) {
+            var v = document.getElementById($scope.emailId_data[i].emailid + i);
+
+            v.checked = true;
+            $scope.row1 = "row_selected";
+            $("tr").addClass("row_selected");
+          }
+        } else {
+          for (var i = 0; i < $scope.emailId_data.length; i++) {
+            var v = document.getElementById($scope.emailId_data[i].emailid + i);
+            v.checked = false;
+            main.checked = false;
+            $scope.row1 = "";
+            $("tr").removeClass("row_selected");
+          }
+        }
+      };
+
+      $scope.checkonebyoneselect = function () {
+        $("input[type='checkbox']").change(function (e) {
+          if ($(this).is(":checked")) {
+            $(this).closest("tr").addClass("row_selected");
+            $scope.color = "#edefef";
+          } else {
+            $(this).closest("tr").removeClass("row_selected");
+            $scope.color = "#edefef";
+          }
+        });
+
+        var main = document.getElementById("mainchkemail");
+        if (main.checked === true) {
+          main.checked = false;
+          $("input[type='checkbox']").change(function (e) {
+            if ($(this).is(":checked")) {
+              $(this).closest("tr").addClass("row_selected");
+            } else {
+              $(this).closest("tr").removeClass("row_selected");
+            }
+          });
+        }
+      };
+      //end
+      $(document).ready(function () {
+        $("#calendar").fullCalendar({
+          header: {
+            left: "prev,next,today",
+            center: "title",
+            right: "month,basicWeek,basicDay",
+          },
+
+          eventClick: function (event, jsEvent, view) {
+            $scope.curr_date = moment(event.start).format("DD-MM-YYYY");
+            $("#view_calendar").modal({ backdrop: "static", keyboard: true });
+            $http
+              .get(
+                ENV.apiUrl +
+                  "api/common/AdmissionDashboard_dpsdNew/GetCalendar_Data_details?curr_code=" +
+                  $scope.dash.curr_code +
+                  "&AcadmicYear=" +
+                  $scope.dash.academic_year +
+                  "&gradeCode=" +
+                  $scope.dash.grade_code +
+                  "&date=" +
+                  moment(event.start).format("YYYY-MM-DD")
+              )
+              .then(function (res) {
+                $scope.calendar_details_lst = res.data;
+              });
+          },
+
+          defaultDate: "2015-02-02",
+          editable: false,
+          eventLimit: true,
+
+          events: $scope.eventsList,
+        });
+      });
+
+      $(".fc-header").hide();
+
+      var currentDate = $("#calendar").fullCalendar("getDate");
+      $("#calender-current-day").html(
+        $.fullCalendar.formatDate(currentDate, "dddd")
+      );
+      $("#calender-current-date").html(
+        $.fullCalendar.formatDate(currentDate, " MMM yyyy")
+      );
+      $("#calender-next").click(function () {
+        $("#calendar").fullCalendar("next");
+        currentDate = $("#calendar").fullCalendar("getDate");
+        $("#calender-current-day").html(
+          $.fullCalendar.formatDate(currentDate, "dddd")
+        );
+        $("#calender-current-date").html(
+          $.fullCalendar.formatDate(currentDate, "MMM yyyy")
+        );
+      });
+
+      $("#calender-prev").click(function () {
+        $("#calendar").fullCalendar("prev");
+        currentDate = $("#calendar").fullCalendar("getDate");
+        $("#calender-current-day").html(
+          $.fullCalendar.formatDate(currentDate, "dddd")
+        );
+        $("#calender-current-date").html(
+          $.fullCalendar.formatDate(currentDate, " MMM yyyy")
+        );
+      });
+
+      $("#change-view-month").click(function () {
+        $("#calendar").fullCalendar("changeView", "month");
+      });
+      $("#change-view-week").click(function () {
+        $("#calendar").fullCalendar("changeView", "agendaWeek");
+      });
+      $("#change-view-day").click(function () {
+        $("#calendar").fullCalendar("changeView", "agendaDay");
+      });
+    },
+  ]);
+})();
